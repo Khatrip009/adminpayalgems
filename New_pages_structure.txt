@@ -1,0 +1,124 @@
+📦 src/pages
+│
+├─ auth
+│  └─ LoginPage.tsx
+│
+├─ dashboard
+│  └─ DashboardHome.tsx
+│
+├─ masters
+│  ├─ categories
+│  │  └─ CategoriesPage.tsx
+│  │
+│  ├─ products
+│  │  ├─ ProductsPage.tsx
+│  │  └─ ProductDetailPage.tsx
+│  │
+│  ├─ craftsmen
+│  │  ├─ CraftsmenListPage.tsx
+│  │  └─ CraftsmanForm.tsx
+│  │
+│  ├─ customers
+│  │  └─ CustomerPage.tsx
+│  │
+│  └─ suppliers
+│     └─ AdminSuppliersPage.tsx
+│
+├─ procurement
+│  ├─ purchase-orders
+│  │  ├─ PurchaseOrdersPage.tsx
+│  │  ├─ PurchaseOrderCreatePage.tsx
+│  │  └─ PurchaseOrderDetailPage.tsx
+│  │
+│  ├─ grn
+│  │  ├─ GRNListPage.tsx
+│  │  ├─ GRNCreatePage.tsx
+│  │  └─ GRNDetailPage.tsx
+│  │
+│  ├─ supplier-invoices
+│  │  ├─ AdminSupplierInvoicesPage.tsx
+│  │  └─ AdminInvoiceDetailPage.tsx
+│  │
+│  ├─ supplier-ledger
+│  │  └─ AdminSupplierLedgerPage.tsx
+│  │
+│  └─ supplier-payments
+│     └─ AdminSupplierPaymentsPage.tsx
+│
+├─ inventory
+│  ├─ packets
+│  │  ├─ AdminDiamondPacketsPage.tsx
+│  │  ├─ AdminPacketDetailPage.tsx
+│  │  ├─ PacketCreatePage.tsx
+│  │  ├─ PacketSplitPage.tsx
+│  │  ├─ PacketMergePage.tsx
+│  │  └─ PacketLabelsPage.tsx
+│  │
+│  ├─ movements
+│  │  └─ AdminStockMovementsPage.tsx
+│  │
+│  └─ valuation
+│     └─ AdminWarehouseValuationPage.tsx
+│
+├─ production
+│  ├─ work-orders
+│  │  ├─ AdminWorkOrdersPage.tsx
+│  │  ├─ AdminWorkOrderCreatePage.tsx
+│  │  ├─ AdminWorkOrderDetailPage.tsx
+│  │  ├─ AdminWorkOrderReceivePage.tsx
+│  │  └─ AdminWorkOrderClosePage.tsx
+│
+├─ finance
+│  ├─ payments
+│  │  ├─ AdminPaymentsPage.tsx
+│  │  └─ AdminPaymentDetailPage.tsx
+│  │
+│  ├─ returns
+│  │  ├─ AdminReturnsPage.tsx
+│  │  ├─ AdminReturnDetailPage.tsx
+│  │  └─ AccountReturnsPage.tsx
+│  │
+│  ├─ settlement
+│  │  └─ AdminSettlementPage.tsx
+│  │
+│  └─ tax
+│     └─ AdminTaxRulesPage.tsx
+│
+├─ sales
+│  ├─ orders
+│  │  ├─ AdminOrdersPage.tsx
+│  │  └─ AdminOrderDetailPage.tsx
+│  │
+│  ├─ returns
+│  │  ├─ ReturnRequestPage.tsx
+│  │  └─ ReturnConfirmationPage.tsx
+│  │
+│  └─ promos
+│     └─ AdminPromoCodesPage.tsx
+│
+├─ logistics
+│  ├─ shipping
+│  │  ├─ AdminShippingMethodsPage.tsx
+│  │  └─ AdminShippingRulesPage.tsx
+│  │
+│  └─ exports
+│     ├─ ExportsPage.tsx
+│     └─ ExportHistoryPage.tsx
+│
+├─ system
+│  ├─ users
+│  │  └─ AdminUsersPage.tsx
+│  │
+│  ├─ security
+│  │  ├─ AdminSecurityLogsPage.tsx
+│  │  └─ AdminSecurityAlertsPage.tsx
+│  │
+│  ├─ profile
+│  │  └─ AdminProfilePage.tsx
+│  │
+│  └─ notifications
+│     ├─ NotificationsPage.tsx
+│     └─ NotificationsAdminPage.tsx
+│
+└─ misc
+   └─ PrintCenterPage.tsx
