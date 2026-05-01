@@ -229,6 +229,7 @@ const ProductsPage: React.FC = () => {
 
   const pageCount = useMemo(() => (total > 0 ? Math.ceil(total / limit) : 1), [total, limit]);
 
+  // Update form when diamonds change
   useEffect(() => {
     const diamondsForBackend = diamondEntries.map(({ id, ...rest }) => rest);
     setForm((prev) => ({ ...prev, diamonds: diamondsForBackend }));
@@ -241,6 +242,7 @@ const ProductsPage: React.FC = () => {
     }));
   }, [diamondEntries]);
 
+  // Load products with sorting (newest first)
   async function loadProducts(targetPage?: number) {
     setLoading(true);
     try {
@@ -774,6 +776,9 @@ const ProductsPage: React.FC = () => {
 
   const pageCountValue = pageCount;
 
+  // Format helpers for table display
+  const formatCurrency = (val: number) => val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
   return (
     <div className="relative">
       <AdminPageHeader
@@ -917,103 +922,106 @@ const ProductsPage: React.FC = () => {
                     <td colSpan={8} className="py-8 text-center text-lg">No products found</td>
                   </tr>
                 ) : (
-                  products.map((p) => (
-                    <tr key={p.id} className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
-                      <td className="px-4 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedProductIds.has(p.id)}
-                          onChange={() => toggleSelectProduct(p.id)}
-                          className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-600"
-                        />
-                      </td>
-                      <td className="px-6 py-4">
-                        {p.primary_image ? (
-                          <img
-                            src={getAssetUrl(p.primary_image)}
-                            alt={p.title}
-                            className="h-12 w-12 rounded object-cover"
+                  products.map((p) => {
+                    const diamondCount = p.diamonds && Array.isArray(p.diamonds) ? p.diamonds.length : 0;
+                    return (
+                      <tr key={p.id} className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                        <td className="px-4 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedProductIds.has(p.id)}
+                            onChange={() => toggleSelectProduct(p.id)}
+                            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-600"
                           />
-                        ) : (
-                          <div className="h-12 w-12 rounded bg-slate-100 flex items-center justify-center">
-                            <Package size={20} className="text-slate-400" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col gap-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">{p.title}</span>
-                          </div>
-                          {p.short_description && (
-                            <div className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
-                              {p.short_description}
+                        </td>
+                        <td className="px-6 py-4">
+                          {p.primary_image ? (
+                            <img
+                              src={getAssetUrl(p.primary_image)}
+                              alt={p.title}
+                              className="h-12 w-12 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="h-12 w-12 rounded bg-slate-100 flex items-center justify-center">
+                              <Package size={20} className="text-slate-400" />
                             </div>
                           )}
-                          {p.sku && <div className="text-xs text-slate-400 dark:text-slate-500">SKU: {p.sku}</div>}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="text-base font-semibold">
-                          {p.currency} {Number(p.price).toLocaleString()}
-                        </div>
-                        <div className="text-xs text-slate-500">MOQ: {p.moq ?? 1}</div>
-                      </td>
-                      <td className="px-6 py-4 text-sm">{findCategoryName(p.category_id)}</td>
-                      <td className="px-6 py-4 text-sm">
-                        <button
-                          onClick={() => {
-                            setViewingDiamonds(p.diamonds && Array.isArray(p.diamonds) ? p.diamonds : []);
-                            setViewDiamondsOpen(true);
-                          }}
-                          className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
-                        >
-                          <Eye size={14} /> {p.diamonds?.length || 0}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4">
-                        <button
-                          onClick={() => handleTogglePublished(p)}
-                          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
-                            p.is_published
-                              ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                              : "border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300"
-                          }`}
-                        >
-                          <CheckCircle2 size={14} />
-                          {p.is_published ? "Published" : "Draft"}
-                        </button>
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2">
-                        <Link
-                          to={`/admin/products/${p.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
-                        >
-                          <ExternalLink size={14} /> View
-                        </Link>
-                        <button
-                          onClick={() => openAssetsModal(p)}
-                          className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-                        >
-                          <ImageIcon size={14} /> Assets
-                        </button>
-                        <button
-                          onClick={() => openEditModal(p)}
-                          className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-                        >
-                          <Edit2 size={14} /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(p)}
-                          className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
-                        >
-                          <Trash2 size={14} /> Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{p.title}</span>
+                            </div>
+                            {p.short_description && (
+                              <div className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
+                                {p.short_description}
+                              </div>
+                            )}
+                            {p.sku && <div className="text-xs text-slate-400 dark:text-slate-500">SKU: {p.sku}</div>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="text-base font-semibold">
+                            {p.currency} {formatCurrency(p.price)}
+                          </div>
+                          <div className="text-xs text-slate-500">MOQ: {p.moq ?? 1}</div>
+                        </td>
+                        <td className="px-6 py-4 text-sm">{findCategoryName(p.category_id)}</td>
+                        <td className="px-6 py-4 text-sm">
+                          <button
+                            onClick={() => {
+                              setViewingDiamonds(p.diamonds && Array.isArray(p.diamonds) ? p.diamonds : []);
+                              setViewDiamondsOpen(true);
+                            }}
+                            className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-1 text-xs hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                          >
+                            <Eye size={14} /> {diamondCount}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => handleTogglePublished(p)}
+                            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${
+                              p.is_published
+                                ? "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                                : "border-slate-300 bg-slate-100 text-slate-600 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-300"
+                            }`}
+                          >
+                            <CheckCircle2 size={14} />
+                            {p.is_published ? "Published" : "Draft"}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                          <Link
+                            to={`/admin/products/${p.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                          >
+                            <ExternalLink size={14} /> View
+                          </Link>
+                          <button
+                            onClick={() => openAssetsModal(p)}
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                          >
+                            <ImageIcon size={14} /> Assets
+                          </button>
+                          <button
+                            onClick={() => openEditModal(p)}
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                          >
+                            <Edit2 size={14} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(p)}
+                            className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -1049,7 +1057,7 @@ const ProductsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* CREATE / EDIT MODAL – unchanged (kept for completeness) */}
+      {/* CREATE / EDIT MODAL – FULL */}
       {modalOpen &&
         createPortal(
           <div className="fixed inset-0 z-[1000] flex items-start justify-center bg-black/40 backdrop-blur-sm">
@@ -1057,46 +1065,389 @@ const ProductsPage: React.FC = () => {
               ref={modalContentRef}
               className="w-full max-w-5xl rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-4 max-h-[90vh] overflow-y-auto"
             >
-              {/* Modal content same as before – omitted for brevity, but you must keep your existing modal JSX */}
-              {/* (I'll keep a placeholder; in your actual file copy the existing modal code) */}
-              <div>Modal content (copy from your current file)</div>
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img src="/minal_gems_logo.svg" className="h-10 w-auto" alt="logo" />
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                      {modalMode === "create" ? "Create Product" : "Edit Product"}
+                    </h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Configure product details, pricing, gemstones, and metal.
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setModalOpen(false)} className="rounded-full border border-slate-300 p-2 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-5 text-base">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Title *</label>
+                    <input required value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Slug</label>
+                    <input value={form.slug} onChange={(e) => setForm((f) => ({ ...f, slug: slugifyClient(e.target.value) }))} placeholder="auto-generated if empty" className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Price *</label>
+                    <input type="number" required min={0} step="0.01" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value || 0) }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Currency</label>
+                    <input value={form.currency} onChange={(e) => setForm((f) => ({ ...f, currency: e.target.value.toUpperCase() }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">SKU (optional)</label>
+                    <input value={form.sku} onChange={(e) => setForm((f) => ({ ...f, sku: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Category</label>
+                    <select value={form.category_id} onChange={(e) => setForm((f) => ({ ...f, category_id: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                      <option value="">Uncategorized</option>
+                      {categories.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Trade Type</label>
+                    <select value={form.trade_type} onChange={(e) => setForm((f) => ({ ...f, trade_type: e.target.value as ProductTradeType }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                      {TRADE_TYPE_OPTIONS.filter((t) => t.value).map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                    </select>
+                  </div>
+                  <div className="flex items-center gap-2 pt-6">
+                    <input id="is_published" type="checkbox" className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-600" checked={form.is_published} onChange={(e) => setForm((f) => ({ ...f, is_published: e.target.checked }))} />
+                    <label htmlFor="is_published" className="text-sm text-slate-700 dark:text-slate-200">Published</label>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Available Quantity</label>
+                    <input type="number" min={0} value={form.available_qty} onChange={(e) => setForm((f) => ({ ...f, available_qty: Number(e.target.value || 0) }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">MOQ</label>
+                    <input type="number" min={0} value={form.moq} onChange={(e) => setForm((f) => ({ ...f, moq: Number(e.target.value || 0) }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+
+                {/* Gemstone Section */}
+                <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-200">
+                      <Diamond size={18} /> Gemstones / Diamonds
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={openAddDiamondModal}
+                      className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white hover:bg-emerald-700"
+                    >
+                      <PlusCircle size={14} /> Add Gemstone
+                    </button>
+                  </div>
+
+                  {diamondEntries.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 py-6 text-center text-sm text-slate-500 dark:border-slate-600 dark:bg-slate-900/30">
+                      No gemstones added. Click "Add Gemstone" to specify diamonds or other stones.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full text-sm">
+                        <thead className="bg-slate-100 dark:bg-slate-800">
+                          <tr>
+                            <th className="px-3 py-2">Type</th>
+                            <th className="px-3 py-2">Pcs</th>
+                            <th className="px-3 py-2">Carat</th>
+                            <th className="px-3 py-2">Rate</th>
+                            <th className="px-3 py-2">Color</th>
+                            <th className="px-3 py-2">Clarity</th>
+                            <th className="px-3 py-2">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {diamondEntries.map((d, idx) => (
+                            <tr key={d.id} className="border-t">
+                              <td className="px-3 py-2">{d.type}</td>
+                              <td className="px-3 py-2">{d.pcs}</td>
+                              <td className="px-3 py-2">{d.carat}</td>
+                              <td className="px-3 py-2">{d.rate.toLocaleString()}</td>
+                              <td className="px-3 py-2">{d.color}</td>
+                              <td className="px-3 py-2">{d.clarity}</td>
+                              <td className="px-3 py-2 space-x-2">
+                                <button type="button" onClick={() => openEditDiamondModal(idx)} className="text-blue-600"><Edit2 size={14} /></button>
+                                <button type="button" onClick={() => removeDiamond(idx)} className="text-rose-600"><Trash2 size={14} /></button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                  <div className="mt-2 grid grid-cols-3 gap-4 text-sm">
+                    <div>Total Pcs: {diamondEntries.reduce((s, d) => s + d.pcs, 0)}</div>
+                    <div>Total Carat: {diamondEntries.reduce((s, d) => s + d.carat, 0).toFixed(3)}</div>
+                    <div>Avg Rate: {(diamondEntries.reduce((s, d) => s + (d.rate * d.carat), 0) / (diamondEntries.reduce((s, d) => s + d.carat, 0) || 1)).toFixed(2)}</div>
+                  </div>
+                </div>
+
+                {/* Metal Section */}
+                <div className="border-t border-slate-200 pt-4 dark:border-slate-700">
+                  <h3 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-800 dark:text-slate-200">
+                    <Gem size={18} /> Metal Details
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">Metal Type</label>
+                      <select value={form.metal_type} onChange={(e) => setForm((f) => ({ ...f, metal_type: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                        {METAL_TYPE_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-sm font-medium">Gold Carat</label>
+                      <select value={form.gold_carat} onChange={(e) => setForm((f) => ({ ...f, gold_carat: Number(e.target.value) }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+                        {GOLD_CARAT_OPTIONS.map((opt) => (<option key={opt.value} value={opt.value}>{opt.label}</option>))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Short Description</label>
+                  <textarea rows={2} value={form.short_description} onChange={(e) => setForm((f) => ({ ...f, short_description: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium">Full Description</label>
+                  <textarea rows={4} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100" />
+                </div>
+
+                <div className="flex items-center justify-between pt-4">
+                  <p className="text-sm text-slate-500">Required fields are marked with *</p>
+                  <div className="flex items-center gap-3">
+                    <button type="button" onClick={() => setModalOpen(false)} className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-medium hover:bg-slate-100">Cancel</button>
+                    <button type="submit" disabled={saving} className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60">
+                      {saving ? <Loader2 className="animate-spin" size={16} /> : (modalMode === "create" ? "Create Product" : "Save Changes")}
+                    </button>
+                  </div>
+                </div>
+              </form>
             </div>
           </div>,
           document.body
         )}
 
-      {/* Diamond Modal (add/edit) – keep existing */}
+      {/* Diamond Modal (add/edit) */}
       {diamondModalOpen &&
         createPortal(
           <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-950">
-              {/* diamond modal content – same as before */}
-              <div>Diamond modal</div>
+              <div className="mb-4 flex justify-between">
+                <h3 className="text-lg font-semibold">{editingDiamondIndex !== null ? "Edit Gemstone" : "Add Gemstone"}</h3>
+                <button onClick={() => setDiamondModalOpen(false)}><X size={18} /></button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label>Type</label>
+                  <select
+                    value={showOtherTypeInput ? "Other" : currentDiamond.type}
+                    onChange={handleTypeChange}
+                    className="w-full rounded-lg border p-2"
+                  >
+                    {DIAMOND_TYPE_OPTIONS.map(o => <option key={o}>{o}</option>)}
+                  </select>
+                  {showOtherTypeInput && (
+                    <input
+                      type="text"
+                      placeholder="Specify other type"
+                      value={otherTypeValue}
+                      onChange={handleOtherTypeInputChange}
+                      className="w-full mt-2 rounded-lg border p-2"
+                    />
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label>Pieces</label><input type="number" min={1} value={currentDiamond.pcs} onChange={(e) => setCurrentDiamond({...currentDiamond, pcs: Number(e.target.value)})} className="w-full rounded-lg border p-2" /></div>
+                  <div><label>Carat</label><input type="number" min={0} step={0.001} value={currentDiamond.carat} onChange={(e) => setCurrentDiamond({...currentDiamond, carat: Number(e.target.value)})} className="w-full rounded-lg border p-2" /></div>
+                </div>
+                <div><label>Rate (per carat)</label><input type="number" min={0} step={0.01} value={currentDiamond.rate} onChange={(e) => setCurrentDiamond({...currentDiamond, rate: Number(e.target.value)})} className="w-full rounded-lg border p-2" /></div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div><label>Color</label><select value={currentDiamond.color} onChange={(e) => setCurrentDiamond({...currentDiamond, color: e.target.value})} className="w-full rounded-lg border p-2">{DIAMOND_COLOR_OPTIONS.map(o => <option key={o}>{o}</option>)}</select></div>
+                  <div><label>Clarity</label><select value={currentDiamond.clarity} onChange={(e) => setCurrentDiamond({...currentDiamond, clarity: e.target.value})} className="w-full rounded-lg border p-2">{DIAMOND_CLARITY_OPTIONS.map(o => <option key={o}>{o}</option>)}</select></div>
+                </div>
+                <div><label>Shape (optional)</label><input type="text" value={currentDiamond.shape || ""} onChange={(e) => setCurrentDiamond({...currentDiamond, shape: e.target.value})} className="w-full rounded-lg border p-2" /></div>
+                <div><label>Packet No. (optional)</label><input type="text" value={currentDiamond.packet_no || ""} onChange={(e) => setCurrentDiamond({...currentDiamond, packet_no: e.target.value})} className="w-full rounded-lg border p-2" /></div>
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <button onClick={() => setDiamondModalOpen(false)} className="rounded-full border px-4 py-2">Cancel</button>
+                <button onClick={saveDiamond} className="rounded-full bg-slate-900 px-4 py-2 text-white">Save</button>
+              </div>
             </div>
           </div>,
           document.body
         )}
 
-      {/* View Diamonds Modal – keep existing */}
+      {/* View Diamonds Modal */}
       {viewDiamondsOpen &&
         createPortal(
           <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-y-auto">
             <div className="w-full max-w-3xl rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-4">
-              {/* view diamonds content – same as before */}
-              <div>View diamonds modal</div>
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Gemstone Details</h3>
+                <button onClick={() => setViewDiamondsOpen(false)} className="rounded-full p-1 hover:bg-slate-100 dark:hover:bg-slate-800">
+                  <X size={18} />
+                </button>
+              </div>
+              {viewingDiamonds.length === 0 ? (
+                <div className="py-8 text-center text-slate-500 dark:text-slate-400">No gemstones added for this product.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-100 dark:bg-slate-800">
+                      <tr>
+                        <th className="px-3 py-2">Type</th>
+                        <th className="px-3 py-2">Pcs</th>
+                        <th className="px-3 py-2">Carat</th>
+                        <th className="px-3 py-2">Rate</th>
+                        <th className="px-3 py-2">Color</th>
+                        <th className="px-3 py-2">Clarity</th>
+                        <th className="px-3 py-2">Shape</th>
+                        <th className="px-3 py-2">Packet No.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {viewingDiamonds.map((d, idx) => (
+                        <tr key={idx} className="border-t">
+                          <td className="px-3 py-2">{d.type || "Diamond"}</td>
+                          <td className="px-3 py-2">{d.pcs || 0}</td>
+                          <td className="px-3 py-2">{d.carat || 0}</td>
+                          <td className="px-3 py-2">{d.rate || 0}</td>
+                          <td className="px-3 py-2">{d.color || "—"}</td>
+                          <td className="px-3 py-2">{d.clarity || "—"}</td>
+                          <td className="px-3 py-2">{d.shape || "—"}</td>
+                          <td className="px-3 py-2">{d.packet_no || "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <div className="mt-4 flex justify-end">
+                <button onClick={() => setViewDiamondsOpen(false)} className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  Close
+                </button>
+              </div>
             </div>
           </div>,
           document.body
         )}
 
-      {/* ASSET MODAL – keep existing */}
+      {/* ASSET MODAL */}
       {assetModalOpen &&
         assetProduct &&
         createPortal(
           <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm overflow-y-auto">
             <div className="w-full max-w-3xl rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-4">
-              {/* asset modal content – same as before */}
-              <div>Asset modal</div>
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <img src="/minal_gems_logo.svg" className="h-10 w-auto" />
+                  <div>
+                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Manage Media</h2>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      Upload images or videos for: <span className="font-semibold">{assetProduct.title}</span>
+                    </p>
+                  </div>
+                </div>
+                <button onClick={() => setAssetModalOpen(false)} className="rounded-full border border-slate-300 p-2 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                  <ImageIcon size={16} />
+                  <span>Primary media is used on listing cards and detail page previews.</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button type="button" onClick={handleAssetsUploadClick} disabled={assetsSaving} className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                    {assetsSaving ? <Loader2 className="animate-spin" size={16} /> : <ImagePlus size={16} />}
+                    Upload Media
+                  </button>
+                  <input
+                    ref={assetsFileInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleAssetsFileChange}
+                  />
+                </div>
+              </div>
+
+              <div className="max-h-[420px] overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
+                {assetsLoading ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400">
+                    <Loader2 className="mb-2 animate-spin" size={20} />
+                    Loading media...
+                  </div>
+                ) : assets.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-slate-500 dark:text-slate-400">
+                    <ImageIcon size={24} className="mb-2" />
+                    <p>No media uploaded yet.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                    {assets.map((asset) => {
+                      const isImage = asset.asset_type === "image";
+                      const isVideo = asset.asset_type === "video";
+                      return (
+                        <div key={asset.id} className="flex flex-col overflow-hidden rounded-xl border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-950">
+                          <div className="relative h-40 w-full bg-slate-100 dark:bg-slate-900">
+                            {isImage ? (
+                              <img src={getAssetUrl(asset.url)} alt={asset.filename || ""} className="h-full w-full object-cover" />
+                            ) : isVideo ? (
+                              <video src={getAssetUrl(asset.url)} className="h-full w-full object-cover" controls muted />
+                            ) : (
+                              <div className="flex h-full items-center justify-center text-slate-500 dark:text-slate-400">
+                                <Video size={32} />
+                              </div>
+                            )}
+                            {asset.is_primary && (
+                              <div className="absolute left-2 top-2 inline-flex items-center gap-1 rounded-full bg-emerald-600/90 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+                                <Star size={12} /> Primary
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
+                            <div className="flex-1 truncate text-slate-600 dark:text-slate-300">{asset.filename || "Media"}</div>
+                          </div>
+                          <div className="flex items-center justify-between gap-2 px-3 pb-3 text-xs">
+                            <button onClick={() => handleSetPrimaryAsset(asset)} className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-2 py-1 text-[11px] font-medium hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800">
+                              <Star size={12} /> Set Primary
+                            </button>
+                            <button onClick={() => handleDeleteAsset(asset)} className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-2 py-1 text-[11px] font-medium text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200">
+                              <Trash size={12} /> Delete
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 flex justify-end">
+                <button onClick={() => setAssetModalOpen(false)} className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200">
+                  Close
+                </button>
+              </div>
             </div>
           </div>,
           document.body
