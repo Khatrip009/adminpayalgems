@@ -328,10 +328,10 @@ export default function AdminCraftsmanAccountsPage() {
           {!loading && statement && statement.totals ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left side: 18Kt + Labour (with Item No) */}
+                {/* Left side: 18Kt + Labour (with Carat) */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Gold Consumed (18Kt) & Labour</CardTitle>
+                    <CardTitle>Gold Consumed & Labour</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
@@ -340,8 +340,9 @@ export default function AdminCraftsmanAccountsPage() {
                           <tr>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item No</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Carat</th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Remark</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">18Kt</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty (Kt)</th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Labour</th>
                           </tr>
                         </thead>
@@ -350,6 +351,7 @@ export default function AdminCraftsmanAccountsPage() {
                             <tr key={idx}>
                               <td className="px-4 py-2 text-sm">{entry.date || ""}</td>
                               <td className="px-4 py-2 text-sm">{(entry as any).item_no || ""}</td>
+                              <td className="px-4 py-2 text-sm">{(entry as any).carat || 18}</td>
                               <td className="px-4 py-2 text-sm">{entry.remark || ""}</td>
                               <td className="px-4 py-2 text-sm">{formatGold(entry.quantity_18kt)}</td>
                               <td className="px-4 py-2 text-sm">{formatCurrency(entry.labour_amount)}</td>
@@ -428,7 +430,7 @@ export default function AdminCraftsmanAccountsPage() {
                   <Plus className="w-4 h-4 mr-2" /> Add Gold Issue (24Kt)
                 </Button>
                 <Button onClick={() => openCreateModal("goldConsumption")}>
-                  <Plus className="w-4 h-4 mr-2" /> Add Gold Consumption (18Kt + Labour)
+                  <Plus className="w-4 h-4 mr-2" /> Add Gold Consumption (Kt + Labour)
                 </Button>
                 <Button onClick={() => openCreateModal("cashPayment")}>
                   <Plus className="w-4 h-4 mr-2" /> Add Cash Payment
@@ -473,10 +475,10 @@ export default function AdminCraftsmanAccountsPage() {
                 </CardContent>
               </Card>
 
-              {/* Gold Consumptions Table (with Item No) */}
+              {/* Gold Consumptions Table (with Carat) */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Gold Consumptions (18Kt + Labour)</CardTitle>
+                  <CardTitle>Gold Consumptions (Kt + Labour)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
@@ -485,7 +487,8 @@ export default function AdminCraftsmanAccountsPage() {
                         <tr>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Date</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Item No</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Quantity (18Kt)</th>
+                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Carat</th>
+                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Qty (Kt)</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Labour</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Remark</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Actions</th>
@@ -496,6 +499,7 @@ export default function AdminCraftsmanAccountsPage() {
                           <tr key={item.id}>
                             <td className="px-4 py-2 text-sm">{item.consumption_date}</td>
                             <td className="px-4 py-2 text-sm">{(item as any).item_no || ""}</td>
+                            <td className="px-4 py-2 text-sm">{(item as any).carat || 18}</td>
                             <td className="px-4 py-2 text-sm">{formatGold(item.quantity_18kt)}</td>
                             <td className="px-4 py-2 text-sm">{formatCurrency(item.labour_amount)}</td>
                             <td className="px-4 py-2 text-sm">{item.remark}</td>
@@ -629,12 +633,21 @@ export default function AdminCraftsmanAccountsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (18Kt)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (Kt)</label>
                     <Input
                       type="number"
                       step="0.001"
                       value={formData.quantity_18kt || ""}
                       onChange={(e) => setFormData({ ...formData, quantity_18kt: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Carat</label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={formData.carat || 18}
+                      onChange={(e) => setFormData({ ...formData, carat: parseFloat(e.target.value) })}
                     />
                   </div>
                   <div>
