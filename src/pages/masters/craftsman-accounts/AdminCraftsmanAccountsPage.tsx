@@ -328,7 +328,7 @@ export default function AdminCraftsmanAccountsPage() {
           {!loading && statement && statement.totals ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left side: 18Kt + Labour */}
+                {/* Left side: 18Kt + Labour (now includes Item No) */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Gold Consumed (18Kt) & Labour</CardTitle>
@@ -339,6 +339,7 @@ export default function AdminCraftsmanAccountsPage() {
                         <thead className="bg-gray-50">
                           <tr>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item No</th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Remark</th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">18Kt</th>
                             <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Labour</th>
@@ -348,6 +349,7 @@ export default function AdminCraftsmanAccountsPage() {
                           {statement.leftEntries.map((entry, idx) => (
                             <tr key={idx}>
                               <td className="px-4 py-2 text-sm">{entry.date || ""}</td>
+                              <td className="px-4 py-2 text-sm">{entry.item_no || ""}</td>
                               <td className="px-4 py-2 text-sm">{entry.remark || ""}</td>
                               <td className="px-4 py-2 text-sm">{formatGold(entry.quantity_18kt)}</td>
                               <td className="px-4 py-2 text-sm">{formatCurrency(entry.labour_amount)}</td>
@@ -471,7 +473,7 @@ export default function AdminCraftsmanAccountsPage() {
                 </CardContent>
               </Card>
 
-              {/* Gold Consumptions Table */}
+              {/* Gold Consumptions Table (with Item No) */}
               <Card>
                 <CardHeader>
                   <CardTitle>Gold Consumptions (18Kt + Labour)</CardTitle>
@@ -482,6 +484,7 @@ export default function AdminCraftsmanAccountsPage() {
                       <thead className="bg-gray-50">
                         <tr>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Date</th>
+                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Item No</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Quantity (18Kt)</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Labour</th>
                           <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Remark</th>
@@ -492,6 +495,7 @@ export default function AdminCraftsmanAccountsPage() {
                         {goldConsumptions.map((item) => (
                           <tr key={item.id}>
                             <td className="px-4 py-2 text-sm">{item.consumption_date}</td>
+                            <td className="px-4 py-2 text-sm">{(item as any).item_no || ""}</td>
                             <td className="px-4 py-2 text-sm">{formatGold(item.quantity_18kt)}</td>
                             <td className="px-4 py-2 text-sm">{formatCurrency(item.labour_amount)}</td>
                             <td className="px-4 py-2 text-sm">{item.remark}</td>
@@ -544,7 +548,7 @@ export default function AdminCraftsmanAccountsPage() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                    <tr>
                   </div>
                 </CardContent>
               </Card>
@@ -640,6 +644,14 @@ export default function AdminCraftsmanAccountsPage() {
                       step="0.01"
                       value={formData.labour_amount || ""}
                       onChange={(e) => setFormData({ ...formData, labour_amount: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Item No</label>
+                    <Input
+                      type="text"
+                      value={formData.item_no || ""}
+                      onChange={(e) => setFormData({ ...formData, item_no: e.target.value })}
                     />
                   </div>
                   <div>
