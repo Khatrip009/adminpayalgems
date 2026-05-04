@@ -59,10 +59,9 @@ const TRADE_TYPE_OPTIONS: { value: ProductTradeType | ""; label: string }[] = [
 ];
 
 const METAL_TYPE_OPTIONS = [
-  { value: "gold", label: "Gold" },
-  { value: "platinum", label: "Platinum" },
-  { value: "silver", label: "Silver" },
-  { value: "other", label: "Other" },
+  { value: "Yellow_Gold", label: "Yellow Gold" },
+  { value: "White_Gold", label: "White Gold" },
+  { value: "Rose_Gold", label: "Rose Gold" },
 ];
 
 const GOLD_CARAT_OPTIONS = [
@@ -93,6 +92,15 @@ const DIAMOND_COLOR_OPTIONS = [
 
 const DIAMOND_CLARITY_OPTIONS = [
   "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3",
+];
+
+const DIAMOND_SHAPE_OPTIONS = [
+  "Round", "Oval", "Pear", "Cushion Modified", "Cushion Brilliant",
+  "Emerald", "Radiant", "Princess", "Asscher", "Square", "Marquise",
+  "Heart", "Trilliant", "Euro Cut", "Old Miner", "Briolette", "Rose Cut",
+  "Lozenge", "Baguette", "Tapered Baguette", "Half Moon", "Flanders",
+  "Trapezoid", "Bullets", "Kite", "Shield", "Star", "Pentagonal",
+  "Hexagonal", "Octagonal", "Portuguese", "Moval Cut"
 ];
 
 interface DiamondEntry {
@@ -145,7 +153,7 @@ const blankProductForm: ProductFormState = {
   diamond_carat: 0,
   rate: 0,
   diamonds: [],
-  metal_type: "gold",
+  metal_type: "Yellow_Gold",   // updated to match one of the metal options
   gold_carat: 18,
 };
 
@@ -358,7 +366,7 @@ const ProductsPage: React.FC = () => {
       diamond_carat: p.diamond_carat ?? 0,
       rate: p.rate ?? 0,
       diamonds: p.diamonds && Array.isArray(p.diamonds) ? p.diamonds : [],
-      metal_type: p.metal_type || "gold",
+      metal_type: p.metal_type || "Yellow_Gold",
       gold_carat: p.gold_carat ?? 18,
     });
     setModalOpen(true);
@@ -751,7 +759,7 @@ const ProductsPage: React.FC = () => {
             diamond_carat: parseFloat(record.diamond_carat) || 0,
             rate: parseFloat(record.rate) || 0,
             diamonds: diamondsArray,
-            metal_type: record.metal_type || "gold",
+            metal_type: record.metal_type || "Yellow_Gold",
             gold_carat: parseFloat(record.gold_carat) || 18,
           });
           created++;
@@ -1282,7 +1290,19 @@ const ProductsPage: React.FC = () => {
                   <div><label>Color</label><select value={currentDiamond.color} onChange={(e) => setCurrentDiamond({...currentDiamond, color: e.target.value})} className="w-full rounded-lg border p-2">{DIAMOND_COLOR_OPTIONS.map(o => <option key={o}>{o}</option>)}</select></div>
                   <div><label>Clarity</label><select value={currentDiamond.clarity} onChange={(e) => setCurrentDiamond({...currentDiamond, clarity: e.target.value})} className="w-full rounded-lg border p-2">{DIAMOND_CLARITY_OPTIONS.map(o => <option key={o}>{o}</option>)}</select></div>
                 </div>
-                <div><label>Shape (optional)</label><input type="text" value={currentDiamond.shape || ""} onChange={(e) => setCurrentDiamond({...currentDiamond, shape: e.target.value})} className="w-full rounded-lg border p-2" /></div>
+                {/* Shape dropdown added here */}
+                <div>
+                  <label>Shape</label>
+                  <select
+                    value={currentDiamond.shape || "Round"}
+                    onChange={(e) => setCurrentDiamond({...currentDiamond, shape: e.target.value})}
+                    className="w-full rounded-lg border p-2"
+                  >
+                    {DIAMOND_SHAPE_OPTIONS.map(shape => (
+                      <option key={shape} value={shape}>{shape}</option>
+                    ))}
+                  </select>
+                </div>
                 <div><label>Packet No. (optional)</label><input type="text" value={currentDiamond.packet_no || ""} onChange={(e) => setCurrentDiamond({...currentDiamond, packet_no: e.target.value})} className="w-full rounded-lg border p-2" /></div>
               </div>
               <div className="mt-5 flex justify-end gap-2">
