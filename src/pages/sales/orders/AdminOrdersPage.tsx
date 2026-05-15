@@ -128,15 +128,15 @@ const AdminOrdersPage: React.FC = () => {
     return "border-slate-300 bg-slate-100 text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200";
   };
 
-  const handleViewOrder = (o: OrderOverview) => {
-    const orderId = getOrderId(o);
-    if (!orderId) {
-      console.warn("Missing order id for order row", o);
-      toast.error("Order ID missing in data.");
-      return;
-    }
-    navigate(`/orders/${orderId}`);
-  };
+const handleViewOrder = (o: OrderOverview) => {
+  const orderId = getOrderId(o);
+  if (!orderId) {
+    console.warn("Missing order id for order row", o);
+    toast.error("Order ID missing in data.");
+    return;
+  }
+  navigate(`/admin/orders/${orderId}`);   // ✅ corrected
+};
 
   return (
     <div className="relative">
