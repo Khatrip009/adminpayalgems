@@ -56,9 +56,7 @@ export const OrderShipments: React.FC<Props> = ({ orderId }) => {
   const loadShipments = async () => {
     setLoading(true);
     try {
-      const res = await api.get(`/logistics/shipments`, {
-        params: { order_id: orderId },
-      });
+      const res = await api.get(`/logistics/shipments?order_id=${encodeURIComponent(orderId)}`);
       if (res.ok) {
         setShipments(res.shipments || []);
       } else {
@@ -132,7 +130,7 @@ export const OrderShipments: React.FC<Props> = ({ orderId }) => {
   // ---------- Load items for a shipment ----------
   const loadItems = async (shipmentId: string) => {
     if (expandedShipment === shipmentId) {
-      setExpandedShipment(null); // collapse
+      setExpandedShipment(null);
       return;
     }
     setExpandedShipment(shipmentId);
@@ -164,7 +162,7 @@ export const OrderShipments: React.FC<Props> = ({ orderId }) => {
       });
       if (res.ok) {
         toast.success("Item added");
-        loadItems(shipmentId); // refresh
+        loadItems(shipmentId);
         setItemOrderItemId("");
         setItemQuantity(1);
         setAddingItem(false);
