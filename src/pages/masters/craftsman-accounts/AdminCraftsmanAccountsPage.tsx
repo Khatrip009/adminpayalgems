@@ -28,7 +28,7 @@ import {
   type GoldConsumption,
   type CashPayment,
 } from "@/api/masters/craftsman-accounts.api";
-import { Download, RefreshCw, Plus, Pencil, Trash2, X } from "lucide-react";
+import { Download, RefreshCw, Plus, Pencil, Trash2, X, Lock } from "lucide-react";
 
 // Helper to get current year-month (YYYY-MM)
 const getCurrentMonth = () => {
@@ -67,6 +67,8 @@ export default function AdminCraftsmanAccountsPage() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [modalType, setModalType] = useState<"goldIssue" | "goldConsumption" | "cashPayment">("goldIssue");
   const [formData, setFormData] = useState<any>({});
+  // Override toggle for final 24kt in gold consumption modal
+  const [overrideFinal24kt, setOverrideFinal24kt] = useState(false);
 
   const [month, setMonth] = useState(getCurrentMonth());
 
@@ -174,6 +176,7 @@ export default function AdminCraftsmanAccountsPage() {
     setModalType(type);
     setEditingItem(null);
     setFormData({});
+    setOverrideFinal24kt(false);
     setModalOpen(true);
   };
 
@@ -181,6 +184,7 @@ export default function AdminCraftsmanAccountsPage() {
     setModalType(type);
     setEditingItem(item);
     setFormData({ ...item });
+    setOverrideFinal24kt(type === "goldConsumption" ? false : false);
     setModalOpen(true);
   };
 
@@ -193,10 +197,18 @@ export default function AdminCraftsmanAccountsPage() {
           await createGoldIssue(selectedCraftsmanId, formData);
         }
       } else if (modalType === "goldConsumption") {
+        const payload = { ...formData };
+        // If override toggle is off, compute final_gold_24kt
+        if (!overrideFinal24kt) {
+          const gw = safeNumber(payload.gold_weight);
+          const ct = safeNumber(payload.carat || 18);
+          const cp = safeNumber(payload.conversion_percentage ?? 100);
+          payload.final_gold_24kt = gw * (ct / 24) * (cp / 100);
+        }
         if (editingItem) {
-          await updateGoldConsumption(editingItem.id, formData);
+          await updateGoldConsumption(editingItem.id, payload);
         } else {
-          await createGoldConsumption(selectedCraftsmanId, formData);
+          await createGoldConsumption(selectedCraftsmanId, payload);
         }
       } else {
         if (editingItem) {
@@ -328,42 +340,49 @@ export default function AdminCraftsmanAccountsPage() {
           {!loading && statement && statement.totals ? (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Left side: 18Kt + Labour (with Carat) */}
+                {/* Left side: Gold Consumptions (with new fields) */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Gold Consumed & Labour</CardTitle>
+                    <CardTitle>Gold Consumptions</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item No</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Carat</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Remark</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty (Kt)</th>
-                            <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Labour</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item No</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Carat</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Conv%</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Gold Wt</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Final 24kt</th>
+                            <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Labour</th>
                           </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                          {statement.leftEntries.map((entry, idx) => (
+                          {statement.leftEntries.map((entry: any, idx) => (
                             <tr key={idx}>
-                              <td className="px-4 py-2 text-sm">{entry.date || ""}</td>
-                              <td className="px-4 py-2 text-sm">{(entry as any).item_no || ""}</td>
-                              <td className="px-4 py-2 text-sm">{(entry as any).carat || 18}</td>
-                              <td className="px-4 py-2 text-sm">{entry.remark || ""}</td>
-                              <td className="px-4 py-2 text-sm">{formatGold(entry.quantity_18kt)}</td>
-                              <td className="px-4 py-2 text-sm">{formatCurrency(entry.labour_amount)}</td>
+                              <td className="px-2 py-2 text-xs">{entry.date || ""}</td>
+                              <td className="px-2 py-2 text-xs">{entry.item_no || ""}</td>
+                              <td className="px-2 py-2 text-xs">{entry.carat || 18}</td>
+                              <td className="px-2 py-2 text-xs">{entry.conversion_percentage ?? 100}</td>
+                              <td className="px-2 py-2 text-xs">{formatGold(entry.gold_weight)}</td>
+                              <td className="px-2 py-2 text-xs">{formatGold(entry.final_gold_24kt)}</td>
+                              <td className="px-2 py-2 text-xs">{formatCurrency(entry.labour_amount)}</td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
+                    <div className="mt-2 text-sm font-medium">
+                      Total Gold Wt: {formatGold(statement.totals.totalGoldWeight)} &nbsp;
+                      Total Final 24kt: {formatGold(statement.totals.totalEquivalent24kt)} &nbsp;
+                      Total Labour: {formatCurrency(statement.totals.totalLabour)}
+                    </div>
                   </CardContent>
                 </Card>
 
-                {/* Right side: 24Kt + Cash */}
+                {/* Right side: Gold Issues + Cash Payments */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Gold Issued (24Kt) & Cash Payments</CardTitle>
@@ -390,6 +409,10 @@ export default function AdminCraftsmanAccountsPage() {
                           ))}
                         </tbody>
                       </table>
+                    </div>
+                    <div className="mt-2 text-sm font-medium">
+                      Total Cash: {formatCurrency(statement.totals.totalCash)} &nbsp;
+                      Total 24Kt Issued: {formatGold(statement.totals.total24ktIssued)}
                     </div>
                   </CardContent>
                 </Card>
@@ -430,7 +453,7 @@ export default function AdminCraftsmanAccountsPage() {
                   <Plus className="w-4 h-4 mr-2" /> Add Gold Issue (24Kt)
                 </Button>
                 <Button onClick={() => openCreateModal("goldConsumption")}>
-                  <Plus className="w-4 h-4 mr-2" /> Add Gold Consumption (Kt + Labour)
+                  <Plus className="w-4 h-4 mr-2" /> Add Gold Consumption
                 </Button>
                 <Button onClick={() => openCreateModal("cashPayment")}>
                   <Plus className="w-4 h-4 mr-2" /> Add Cash Payment
@@ -475,35 +498,37 @@ export default function AdminCraftsmanAccountsPage() {
                 </CardContent>
               </Card>
 
-              {/* Gold Consumptions Table (with Carat) */}
+              {/* Gold Consumptions Table (with new fields) */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Gold Consumptions (Kt + Labour)</CardTitle>
+                  <CardTitle>Gold Consumptions</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Date</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Item No</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Carat</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Qty (Kt)</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Labour</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Remark</th>
-                          <th className="px-4 py-2 text-xs font-medium text-gray-500 uppercase">Actions</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Date</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Item No</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Carat</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Conv%</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Gold Wt</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Final 24kt</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Labour</th>
+                          <th className="px-2 py-2 text-xs font-medium text-gray-500 uppercase">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {goldConsumptions.map((item) => (
                           <tr key={item.id}>
-                            <td className="px-4 py-2 text-sm">{item.consumption_date}</td>
-                            <td className="px-4 py-2 text-sm">{(item as any).item_no || ""}</td>
-                            <td className="px-4 py-2 text-sm">{(item as any).carat || 18}</td>
-                            <td className="px-4 py-2 text-sm">{formatGold(item.quantity_18kt)}</td>
-                            <td className="px-4 py-2 text-sm">{formatCurrency(item.labour_amount)}</td>
-                            <td className="px-4 py-2 text-sm">{item.remark}</td>
-                            <td className="px-4 py-2 text-sm">
+                            <td className="px-2 py-2 text-xs">{item.consumption_date}</td>
+                            <td className="px-2 py-2 text-xs">{item.item_no || ""}</td>
+                            <td className="px-2 py-2 text-xs">{item.carat || 18}</td>
+                            <td className="px-2 py-2 text-xs">{item.conversion_percentage ?? 100}</td>
+                            <td className="px-2 py-2 text-xs">{formatGold(item.gold_weight)}</td>
+                            <td className="px-2 py-2 text-xs">{formatGold(item.final_gold_24kt)}</td>
+                            <td className="px-2 py-2 text-xs">{formatCurrency(item.labour_amount)}</td>
+                            <td className="px-2 py-2 text-xs">
                               <Button variant="ghost" size="sm" onClick={() => openEditModal("goldConsumption", item)}>
                                 <Pencil className="w-4 h-4" />
                               </Button>
@@ -594,6 +619,7 @@ export default function AdminCraftsmanAccountsPage() {
               </button>
             </div>
             <div className="p-4 space-y-4">
+              {/* Gold Issue Form */}
               {modalType === "goldIssue" && (
                 <>
                   <div>
@@ -622,6 +648,8 @@ export default function AdminCraftsmanAccountsPage() {
                   </div>
                 </>
               )}
+
+              {/* Gold Consumption Form */}
               {modalType === "goldConsumption" && (
                 <>
                   <div>
@@ -633,12 +661,12 @@ export default function AdminCraftsmanAccountsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (Kt)</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Gold Weight</label>
                     <Input
                       type="number"
                       step="0.001"
-                      value={formData.quantity_18kt || ""}
-                      onChange={(e) => setFormData({ ...formData, quantity_18kt: parseFloat(e.target.value) })}
+                      value={formData.gold_weight || ""}
+                      onChange={(e) => setFormData({ ...formData, gold_weight: parseFloat(e.target.value) })}
                     />
                   </div>
                   <div>
@@ -648,6 +676,48 @@ export default function AdminCraftsmanAccountsPage() {
                       step="0.1"
                       value={formData.carat || 18}
                       onChange={(e) => setFormData({ ...formData, carat: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Conversion %</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={formData.conversion_percentage ?? 100}
+                      onChange={(e) => setFormData({ ...formData, conversion_percentage: parseFloat(e.target.value) })}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={overrideFinal24kt}
+                      onChange={(e) => setOverrideFinal24kt(e.target.checked)}
+                    />
+                    <label className="text-sm text-gray-700">Custom Final 24kt Value</label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Final Gold (24kt) {overrideFinal24kt ? "(manual)" : "(auto)"}
+                    </label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      value={
+                        overrideFinal24kt
+                          ? formData.final_gold_24kt || ""
+                          : (() => {
+                              const gw = safeNumber(formData.gold_weight);
+                              const ct = safeNumber(formData.carat || 18);
+                              const cp = safeNumber(formData.conversion_percentage ?? 100);
+                              return (gw * (ct / 24) * (cp / 100)).toFixed(3);
+                            })()
+                      }
+                      onChange={(e) => {
+                        if (overrideFinal24kt) {
+                          setFormData({ ...formData, final_gold_24kt: parseFloat(e.target.value) });
+                        }
+                      }}
+                      disabled={!overrideFinal24kt}
                     />
                   </div>
                   <div>
@@ -676,6 +746,8 @@ export default function AdminCraftsmanAccountsPage() {
                   </div>
                 </>
               )}
+
+              {/* Cash Payment Form */}
               {modalType === "cashPayment" && (
                 <>
                   <div>
@@ -714,4 +786,4 @@ export default function AdminCraftsmanAccountsPage() {
       )}
     </div>
   );
-}
+} 

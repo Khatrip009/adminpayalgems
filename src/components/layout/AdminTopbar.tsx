@@ -1,12 +1,18 @@
 // src/components/layout/AdminTopbar.tsx
 import React, { useEffect, useState, useRef } from "react";
-import { Search, ChevronDown, LogOut, User2, Menu, Volume2, VolumeX } from "lucide-react";
+import {
+  Search,
+  ChevronDown,
+  LogOut,
+  User2,
+  Menu,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
 import ThemeToggle from "../ui/ThemeToggle";
 import NotificationBell from "../admin/NotificationBell";
-
-import { getMyProfile, type Profile } from "../../api/core/profile.api";
+import { getMyProfile, type UserProfile } from "../../api/core/profile.api";
 import { useNavigate } from "react-router-dom";
 
 interface AdminTopbarProps {
@@ -15,16 +21,16 @@ interface AdminTopbarProps {
 
 const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
-  const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [muted, setMuted] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement | null>(null);
 
+  // Close user menu on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
@@ -35,6 +41,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Load profile for avatar / display name
   useEffect(() => {
     let mounted = true;
     (async () => {
@@ -48,15 +55,16 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
     return () => { mounted = false; };
   }, []);
 
+  // Search submit handler
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!search.trim()) return;
-    navigate(`/search?q=${encodeURIComponent(search.trim())}`);
+    const term = search.trim();
+    if (term) navigate(`/search?q=${encodeURIComponent(term)}`);
   };
 
+  // User display logic
   const avatarUrl = profile?.avatar_url ?? null;
   const displayName = profile?.public_name || user?.full_name || user?.email || "Admin";
-
   const initials = displayName
     .split(" ")
     .filter(Boolean)
@@ -66,9 +74,10 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
 
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/80">
-      <div className="flex items-center justify-between px-4 py-2.5 md:px-6">
-        {/* Left */}
-        <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center justify-between px-3 sm:px-6 py-2">
+        {/* Left section */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Sidebar toggle (mobile) */}
           {onToggleSidebar && (
             <button
               type="button"
@@ -80,21 +89,30 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
             </button>
           )}
 
+          {/* Brand */}
           <button
-            className="flex items-center gap-2.5 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.20em] text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            className="flex items-center gap-2 sm:gap-2.5 rounded-full border border-slate-200 bg-white px-2 sm:px-3.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             onClick={() => navigate("/")}
             aria-label="Go to dashboard"
           >
-            <img src="/minal_gems_logo.svg" alt="Minal Gems" className="h-14 w-auto" />
+            <img
+              src="/minal_gems_logo.svg"
+              alt="Minal Gems"
+              className="h-10 sm:h-12 w-auto"
+            />
             <div className="hidden flex-col leading-tight sm:flex">
-              <span className="text-[11px] tracking-[0.26em] text-slate-500 dark:text-slate-400">Admin</span>
-              <span className="text-sm font-semibold text-slate-900 dark:text-slate-50">Minal Gems Dashboard</span>
+              <span className="text-[10px] sm:text-[11px] tracking-wider text-slate-500 dark:text-slate-400">
+                Admin
+              </span>
+              <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-50">
+                Minal Gems Dashboard
+              </span>
             </div>
           </button>
         </div>
 
-        {/* Center */}
-        <div className="hidden flex-1 px-4 md:block md:max-w-xl">
+        {/* Center – desktop search */}
+        <div className="hidden flex-1 px-6 md:block md:max-w-xl">
           <form onSubmit={handleSearchSubmit}>
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
@@ -110,14 +128,13 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
           </form>
         </div>
 
-        {/* Right */}
-        <div className="flex items-center gap-2 md:gap-3">
+        {/* Right section */}
+        <div className="flex items-center gap-1 sm:gap-2">
           <ThemeToggle />
 
-          {/* Notification bell (no floating sound control inside) */}
           <NotificationBell muted={muted} />
 
-          {/* Sound toggle placed in topbar so it stays inline and positioned properly */}
+          {/* Sound toggle */}
           <button
             type="button"
             onClick={() => setMuted((m) => !m)}
@@ -128,7 +145,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
             {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </button>
 
-          {/* User Menu */}
+          {/* User menu */}
           <div className="relative" ref={userMenuRef}>
             <button
               type="button"
@@ -138,7 +155,11 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
               aria-expanded={userMenuOpen}
             >
               {avatarUrl ? (
-                <img src={avatarUrl} alt={displayName} className="h-7 w-7 rounded-full object-cover" />
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="h-7 w-7 rounded-full object-cover"
+                />
               ) : (
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-900 text-[11px] font-semibold text-slate-50 dark:bg-slate-50 dark:text-slate-900">
                   {initials || "A"}
@@ -158,7 +179,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
                   <div className="text-[10px] text-slate-500 dark:text-slate-400">{user?.email}</div>
                 </div>
 
-                <div className="my-1 h-px bg-slate-100 dark:bg-slate-700" />
+                <hr className="my-1 border-slate-100 dark:border-slate-700" />
 
                 <button
                   type="button"
@@ -189,14 +210,14 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
         </div>
       </div>
 
-      {/* Mobile Search */}
-      <div className="px-4 pb-2 md:hidden">
+      {/* Mobile search (below topbar) */}
+      <div className="px-3 pb-2 md:hidden">
         <form onSubmit={handleSearchSubmit}>
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="search"
-              placeholder="Search orders, customers…"
+              placeholder="Search..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full rounded-full border border-slate-200 bg-slate-50 pl-9 pr-3 py-2 text-sm shadow-sm outline-none transition placeholder:text-slate-400 focus:border-sky-400 focus:bg-white focus:ring-2 focus:ring-sky-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus:border-sky-500 dark:focus:ring-sky-700/40"
@@ -209,4 +230,4 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
   );
 };
 
-export default AdminTopbar;
+export default AdminTopbar; 

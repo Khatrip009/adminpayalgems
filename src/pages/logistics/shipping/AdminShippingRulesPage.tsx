@@ -22,7 +22,7 @@ import {
   updateShippingRule,
   deleteShippingRule,
   type ShippingRule,
-} from "@/api/logistics/shipments.api";
+} from "@/api/shipping/shipping.api"; // ✅ Fixed import
 
 type RuleType = "flat" | "weight" | "order_value";
 

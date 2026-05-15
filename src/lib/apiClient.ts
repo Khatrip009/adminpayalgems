@@ -1,5 +1,6 @@
 // src/lib/apiClient.ts
-// Hardened API client with domain awareness, single-refresh queue, retry-guard
+// Hardened API client – TypeScript / JavaScript compatible
+// Supports auto token refresh, single‑refresh queue, query params, and download helper
 
 export interface ApiResponse<T = any> {
   ok: boolean;
@@ -12,13 +13,13 @@ export interface ApiResponse<T = any> {
    API BASE
 ===================================================== */
 const API_BASE =
-  import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "") ||
+  (import.meta as any).env?.VITE_API_BASE_URL?.replace(/\/+$/, "") ||
   "https://apiminalgems.exotech.co.in/api";
 
 export const API_BASE_URL = API_BASE;
 
 /* =====================================================
-   DOMAIN ROUTES
+   DOMAIN ROUTES (keep in sync with your backend)
 ===================================================== */
 export const API_ROUTES = {
   auth: "/auth",
@@ -104,14 +105,44 @@ async function refreshAccessToken(): Promise<string | null> {
 ===================================================== */
 export async function apiFetch<T = any>(
   path: string,
-  options: RequestInit & { __retry?: boolean; responseType?: 'json' | 'blob' } = {}
+  options: RequestInit & {
+    __retry?: boolean;
+    responseType?: "json" | "blob";
+    query?: Record<string, any>;
+  } = {}
 ): Promise<T> {
-  const url = path.startsWith("http")
+  // Build URL with query string if present
+  let url = path.startsWith("http")
     ? path
     : `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
-  const opts: RequestInit & { __retry?: boolean; responseType?: 'json' | 'blob' } = { ...options };
-  const headers: HeadersInit = { ...(opts.headers || {}) };
+  if (options.query) {
+    const qs = new URLSearchParams();
+    Object.entries(options.query).forEach(([k, v]) => {
+      if (v !== undefined && v !== null && v !== "") {
+        qs.append(k, String(v));
+      }
+    });
+    const q = qs.toString();
+    if (q) url += `?${q}`;
+  }
+
+  const opts: RequestInit & { __retry?: boolean; responseType?: string } = {
+    ...options,
+  };
+  const headers: Record<string, string> = {};
+
+  // Convert any existing headers to a plain object
+  if (options.headers) {
+    const src = options.headers;
+    if (src instanceof Headers) {
+      src.forEach((val, key) => (headers[key] = val));
+    } else if (Array.isArray(src)) {
+      src.forEach(([k, v]) => (headers[k] = v));
+    } else {
+      Object.assign(headers, src);
+    }
+  }
 
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -119,7 +150,7 @@ export async function apiFetch<T = any>(
   const method = (opts.method || "GET").toUpperCase();
   const isForm = opts.body instanceof FormData;
 
-  if (!isForm && method !== "GET") {
+  if (!isForm && method !== "GET" && !headers["Content-Type"]) {
     headers["Content-Type"] = "application/json";
     if (opts.body && typeof opts.body !== "string") {
       opts.body = JSON.stringify(opts.body);
@@ -138,17 +169,19 @@ export async function apiFetch<T = any>(
 
     if (isAuthEndpoint || opts.__retry) {
       clearAuth();
-      if (!window.location.pathname.startsWith("/login")) {
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
         window.location.replace("/login");
       }
-      throw new Error("Session expired");
+      throw { status: 401, data: { message: "Session expired" } };
     }
 
     const newToken = await refreshAccessToken();
     if (!newToken) {
       clearAuth();
-      window.location.replace("/login");
-      throw new Error("Session expired");
+      if (typeof window !== "undefined") {
+        window.location.replace("/login");
+      }
+      throw { status: 401, data: { message: "Session expired" } };
     }
 
     opts.__retry = true;
@@ -161,39 +194,24 @@ export async function apiFetch<T = any>(
   }
 
   /* ---------- NORMAL FLOW ---------- */
-  // Handle blob responses (for file downloads)
-  if (opts.responseType === 'blob') {
+  if (opts.responseType === "blob") {
     if (!res.ok) {
       const text = await res.text();
       let data: any;
-      try {
-        data = text ? JSON.parse(text) : null;
-      } catch {
-        data = text;
-      }
-      throw {
-        status: res.status,
-        error: data?.error || "api_error",
-        message: data?.message || null,
-      };
+      try { data = text ? JSON.parse(text) : null; } catch { data = text; }
+      throw { status: res.status, data: { message: data?.message || data?.error || "API error" } };
     }
     return (await res.blob()) as T;
   }
 
   const text = await res.text();
   let data: any;
-
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch {
-    data = text;
-  }
+  try { data = text ? JSON.parse(text) : null; } catch { data = text; }
 
   if (!res.ok) {
     throw {
       status: res.status,
-      error: data?.error || "api_error",
-      message: data?.message || null,
+      data: { message: data?.message || data?.error || "API error" },
     };
   }
 
@@ -201,10 +219,11 @@ export async function apiFetch<T = any>(
 }
 
 /* =====================================================
-   HTTP HELPERS
+   HTTP HELPERS (with query support)
 ===================================================== */
 export const api = {
-  get: <T = any>(path: string) => apiFetch<T>(path, { method: "GET" }),
+  get: <T = any>(path: string, params?: Record<string, any>) =>
+    apiFetch<T>(path, { method: "GET", query: params }),
   post: <T = any>(path: string, body?: any) =>
     apiFetch<T>(path, { method: "POST", body }),
   put: <T = any>(path: string, body?: any) =>
@@ -213,10 +232,22 @@ export const api = {
     apiFetch<T>(path, { method: "PATCH", body }),
   delete: <T = any>(path: string) =>
     apiFetch<T>(path, { method: "DELETE" }),
+
+  /** File download helper */
+  download: async (path: string, filename?: string) => {
+    const blob = await apiFetch<Blob>(path, { method: "GET", responseType: "blob" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename || "download";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+  },
 };
 
 /* =====================================================
-   RAW FETCH
+   RAW FETCH (for special cases, no auto‑refresh)
 ===================================================== */
 export async function apiFetchRaw(
   path: string,
@@ -226,7 +257,18 @@ export async function apiFetchRaw(
     ? path
     : `${API_BASE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 
-  const headers: HeadersInit = { ...(options.headers || {}) };
+  const headers: Record<string, string> = {};
+  if (options.headers) {
+    const src = options.headers;
+    if (src instanceof Headers) {
+      src.forEach((val, key) => (headers[key] = val));
+    } else if (Array.isArray(src)) {
+      src.forEach(([k, v]) => (headers[k] = v));
+    } else {
+      Object.assign(headers, src);
+    }
+  }
+
   const token = getToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
 

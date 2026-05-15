@@ -53,11 +53,17 @@ export async function updateCraftsman(id: string, payload: any) {
 /* ---------------------------------------------
    DELETE
 --------------------------------------------- */
-export async function deleteCraftsman(id: string) {
-  if (!id) throw new Error("craftsman_id_required");
-  return api.delete(`${BASE}/${id}`);
-}
+// src/api/masters/craftsmen.api.ts
 
+export async function deleteCraftsman(
+  id: string,
+  cascade = false
+): Promise<{ ok: boolean; id?: string; message?: string; error?: string }> {
+  // BASE is already "/api/masters/craftsmen" (from earlier in the file)
+  const url = `${BASE}/${id}${cascade ? "?cascade=true" : ""}`;
+  const res = await api.delete(url);
+  return res;
+}
 /* ---------------------------------------------
    QUICK SEARCH
 --------------------------------------------- */

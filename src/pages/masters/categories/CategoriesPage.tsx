@@ -30,6 +30,7 @@ import {
   deleteCategory,
 } from "@/api/masters/categories.api";
 
+// ---------- Constants ----------
 const TRADE_TYPE_OPTIONS: { value: CategoryTradeType | ""; label: string }[] = [
   { value: "", label: "All trade types" },
   { value: "import", label: "Import" },
@@ -57,6 +58,7 @@ const blankCategoryForm: CategoryFormState = {
   image_url: "",
 };
 
+// ---------- Helpers ----------
 function slugifyClient(value: string): string {
   return value
     .toLowerCase()
@@ -106,19 +108,20 @@ const CategoriesPage: React.FC = () => {
     [total, limit]
   );
 
-  async function loadCategories(opts?: { keepPage?: boolean }) {
+  // ---------- Data fetching ----------
+  async function loadCategories() {
     setLoading(true);
     try {
       const res = await fetchCategories({
         q,
         trade_type: tradeType || undefined,
-        page: opts?.keepPage ? page : 1,
+        page,
         limit,
-        includeCounts: true,
+        include_counts: true,
       });
       setCategories(res.categories || []);
       setTotal(res.total || 0);
-      if (!opts?.keepPage) setPage(res.page || 1);
+      setPage(res.page || 1);
     } catch (err) {
       console.error("Failed to load categories", err);
       toast.error("Failed to load categories.");
@@ -129,11 +132,20 @@ const CategoriesPage: React.FC = () => {
 
   useEffect(() => {
     loadCategories();
-  }, []);
+  }, []); // initial load
 
+  // Refetch when filters change, resetting page
   useEffect(() => {
+    setPage(1);
     loadCategories();
   }, [tradeType]);
+
+  // Refetch on search
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    loadCategories();
+  };
 
   useEffect(() => {
     if (modalOpen && modalContentRef.current) {
@@ -141,11 +153,7 @@ const CategoriesPage: React.FC = () => {
     }
   }, [modalOpen]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    loadCategories();
-  };
-
+  // ---------- Modal handlers ----------
   const openCreateModal = () => {
     setModalMode("create");
     setCurrentCategory(null);
@@ -174,9 +182,8 @@ const CategoriesPage: React.FC = () => {
     if (!window.confirm(`Delete category "${cat.name}"?`)) return;
     try {
       await deleteCategory(cat.id);
-      setCategories((prev) => prev.filter((c) => c.id !== cat.id));
-      setTotal((t) => Math.max(0, t - 1));
       toast.success("Category deleted.");
+      loadCategories(); // refresh from server
     } catch (err) {
       console.error("Failed to delete category", err);
       toast.error("Failed to delete category.");
@@ -200,15 +207,10 @@ const CategoriesPage: React.FC = () => {
       };
 
       if (modalMode === "create") {
-        const res = await createCategory(payload);
-        setCategories((prev) => [res.category, ...prev]);
-        setTotal((t) => t + 1);
+        await createCategory(payload);
         toast.success("Category created.");
       } else if (modalMode === "edit" && currentCategory) {
-        const res = await updateCategory(currentCategory.id, payload);
-        setCategories((prev) =>
-          prev.map((c) => (c.id === currentCategory.id ? res.category : c))
-        );
+        await updateCategory(currentCategory.id, payload);
         toast.success("Category updated.");
       }
 
@@ -216,6 +218,7 @@ const CategoriesPage: React.FC = () => {
       setCurrentCategory(null);
       setForm(blankCategoryForm);
       setImagePreview(null);
+      loadCategories(); // refresh from server
     } catch (err) {
       console.error("Failed to save category", err);
       toast.error("Failed to save category.");
@@ -224,7 +227,7 @@ const CategoriesPage: React.FC = () => {
     }
   };
 
-  // CSV EXPORT
+  // ---------- CSV Export ----------
   const handleExportCsv = () => {
     if (!categories.length) {
       toast("No categories to export.", { icon: "ℹ️" });
@@ -266,15 +269,13 @@ const CategoriesPage: React.FC = () => {
     toast.success("Categories exported as CSV.");
   };
 
-  // CSV IMPORT
+  // ---------- CSV Import ----------
   const handleImportClick = () => {
     setImportSummary(null);
     fileInputRef.current?.click();
   };
 
-  const handleImportFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleImportFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
@@ -290,9 +291,8 @@ const CategoriesPage: React.FC = () => {
         .filter((l) => l.length > 0);
 
       if (lines.length === 0) {
-        const msg = "No rows found in CSV.";
-        setImportSummary(msg);
-        toast(msg, { icon: "ℹ️" });
+        setImportSummary("No rows found in CSV.");
+        toast("No rows found.", { icon: "ℹ️" });
         return;
       }
 
@@ -321,8 +321,7 @@ const CategoriesPage: React.FC = () => {
 
         const record: any = {};
         headers.forEach((h, idx) => {
-          let val = values[idx]?.replace(/^"|"$/g, "")?.trim() || "";
-          record[h] = val;
+          record[h] = values[idx]?.replace(/^"|"$/g, "")?.trim() || "";
         });
 
         if (!record.name) {
@@ -349,18 +348,17 @@ const CategoriesPage: React.FC = () => {
       const summary = `Import completed. Created: ${created}, Failed: ${failed}.`;
       setImportSummary(summary);
       toast.success("Categories CSV import completed.");
-      await loadCategories();
+      loadCategories();
     } catch (err) {
       console.error("Failed to import categories CSV", err);
-      const msg = "Failed to import CSV. Check console for details.";
-      setImportSummary(msg);
-      toast.error(msg);
+      setImportSummary("Failed to import CSV. Check console for details.");
+      toast.error("Failed to import CSV.");
     } finally {
       setImporting(false);
     }
   };
 
-  // Image upload handler
+  // ---------- Image Upload (base64) ----------
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -389,6 +387,7 @@ const CategoriesPage: React.FC = () => {
     e.target.value = "";
   };
 
+  // ---------- Render ----------
   return (
     <div className="relative">
       <AdminPageHeader
@@ -409,11 +408,7 @@ const CategoriesPage: React.FC = () => {
               disabled={importing}
               className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             >
-              {importing ? (
-                <Loader2 className="animate-spin" size={16} />
-              ) : (
-                <Upload size={16} />
-              )}
+              {importing ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
               Import CSV
             </button>
 
@@ -445,10 +440,7 @@ const CategoriesPage: React.FC = () => {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <form onSubmit={handleSearchSubmit} className="flex flex-1 items-center gap-3">
             <div className="relative flex-1">
-              <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500"
-                size={18}
-              />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
               <input
                 type="text"
                 value={q}
@@ -465,41 +457,54 @@ const CategoriesPage: React.FC = () => {
             </button>
           </form>
 
-          <button
-            onClick={() => loadCategories({ keepPage: true })}
-            disabled={loading}
-            className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-          >
-            {loading ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
-            Refresh
-          </button>
+          <div className="flex items-center gap-3">
+            <select
+              value={tradeType}
+              onChange={(e) => setTradeType(e.target.value as CategoryTradeType | "")}
+              className="rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-sky-500 focus:ring-sky-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              {TRADE_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+
+            <button
+              onClick={loadCategories}
+              disabled={loading}
+              className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            >
+              {loading ? <Loader2 className="animate-spin" size={16} /> : <RefreshCw size={16} />}
+              Refresh
+            </button>
+          </div>
         </div>
 
         <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-base text-slate-800 dark:text-slate-200">
-              <thead className="bg-slate-100 text-sm uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+            <table className="min-w-full text-left text-sm text-slate-800 dark:text-slate-200">
+              <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 <tr>
-                  <th className="px-6 py-4">Image</th>
-                  <th className="px-6 py-4">Name</th>
-                  <th className="px-6 py-4">Slug</th>
-                  <th className="px-6 py-4">Trade Type</th>
-                  <th className="px-6 py-4">Description</th>
-                  <th className="px-6 py-4">Products</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-4 py-3">Image</th>
+                  <th className="px-4 py-3">Name</th>
+                  <th className="px-4 py-3">Slug</th>
+                  <th className="px-4 py-3">Trade Type</th>
+                  <th className="px-4 py-3">Products</th>
+                  <th className="px-4 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-lg">
+                    <td colSpan={6} className="py-8 text-center">
                       <Loader2 className="mx-auto animate-spin" />
-                      Loading...
+                      <span className="ml-2">Loading...</span>
                     </td>
                   </tr>
                 ) : categories.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-8 text-center text-lg">
+                    <td colSpan={6} className="py-8 text-center">
                       No categories found
                     </td>
                   </tr>
@@ -509,7 +514,7 @@ const CategoriesPage: React.FC = () => {
                       key={cat.id}
                       className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
                     >
-                      <td className="px-6 py-4">
+                      <td className="px-4 py-3">
                         {cat.image_url ? (
                           <img
                             src={cat.image_url}
@@ -520,43 +525,34 @@ const CategoriesPage: React.FC = () => {
                             }}
                           />
                         ) : (
-                          <div className="h-10 w-10 rounded bg-slate-100 flex items-center justify-center text-slate-400">
-                            <ImageIcon size={20} />
+                          <div className="flex h-10 w-10 items-center justify-center rounded bg-slate-100 text-slate-400 dark:bg-slate-800">
+                            <ImageIcon size={18} />
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-medium flex items-center gap-2">
-                        <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                          <FolderTree size={16} />
+                      <td className="px-4 py-3 font-medium">
+                        <span className="inline-flex items-center gap-2">
+                          <FolderTree size={14} className="text-slate-500" />
+                          {cat.name}
                         </span>
-                        {cat.name}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-slate-400">
-                        {cat.slug}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex rounded-full border border-slate-300 bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-wide text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                      <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{cat.slug}</td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium uppercase dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
                           {cat.trade_type}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-300">
-                        {cat.description || "—"}
-                      </td>
-                      <td className="px-6 py-4 text-sm">
-                        {typeof cat.product_count === "number"
-                          ? cat.product_count
-                          : "—"}
-                      </td>
-                      <td className="px-6 py-4 text-right space-x-2">
+                      <td className="px-4 py-3 text-xs">{cat.product_count ?? "—"}</td>
+                      <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
                         <button
                           onClick={() => openEditModal(cat)}
-                          className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                          className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
                         >
                           <Edit2 size={14} /> Edit
                         </button>
                         <button
                           onClick={() => handleDelete(cat)}
-                          className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-sm text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+                          className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
                         >
                           <Trash2 size={14} /> Delete
                         </button>
@@ -568,7 +564,8 @@ const CategoriesPage: React.FC = () => {
             </table>
           </div>
 
-          <div className="flex items-center justify-between px-6 py-3 text-sm text-slate-600 dark:text-slate-400">
+          {/* Pagination */}
+          <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
             <div>
               Page {page} of {pageCount} · {total} categories
             </div>
@@ -576,9 +573,9 @@ const CategoriesPage: React.FC = () => {
               <button
                 disabled={page <= 1 || loading}
                 onClick={() => {
-                  if (page <= 1) return;
-                  setPage((p) => p - 1);
-                  loadCategories({ keepPage: false });
+                  const newPage = Math.max(1, page - 1);
+                  setPage(newPage);
+                  loadCategories();
                 }}
                 className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900"
               >
@@ -587,9 +584,9 @@ const CategoriesPage: React.FC = () => {
               <button
                 disabled={page >= pageCount || loading}
                 onClick={() => {
-                  if (page >= pageCount) return;
-                  setPage((p) => p + 1);
-                  loadCategories({ keepPage: false });
+                  const newPage = Math.min(pageCount, page + 1);
+                  setPage(newPage);
+                  loadCategories();
                 }}
                 className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900"
               >
@@ -600,13 +597,13 @@ const CategoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ================= MODAL – PORTAL (FIXED ABOVE TOPBAR) ================= */}
+      {/* Create / Edit Modal */}
       {modalOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[1000] flex items-start justify-center bg-black/40 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[1000] flex items-start justify-center bg-black/40 backdrop-blur-sm p-4">
             <div
               ref={modalContentRef}
-              className="w-full max-w-xl rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-4 max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-xl rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-auto max-h-[90vh] overflow-y-auto"
             >
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -616,7 +613,7 @@ const CategoriesPage: React.FC = () => {
                       {modalMode === "create" ? "Create Category" : "Edit Category"}
                     </h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">
-                      Manage product categories for the Minal Gems catalog.
+                      Manage product categories.
                     </p>
                   </div>
                 </div>
@@ -628,15 +625,15 @@ const CategoriesPage: React.FC = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-4 text-base">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Name *</label>
                     <input
                       required
                       value={form.name}
                       onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
                   </div>
                   <div>
@@ -646,24 +643,21 @@ const CategoriesPage: React.FC = () => {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, slug: slugifyClient(e.target.value) }))
                       }
-                      placeholder="auto-generated if empty"
-                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      placeholder="auto-generated"
+                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Trade Type</label>
                     <select
                       value={form.trade_type}
                       onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          trade_type: e.target.value as CategoryTradeType,
-                        }))
+                        setForm((f) => ({ ...f, trade_type: e.target.value as CategoryTradeType }))
                       }
-                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     >
                       {TRADE_TYPE_OPTIONS.filter((t) => t.value).map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -678,20 +672,17 @@ const CategoriesPage: React.FC = () => {
                       type="number"
                       value={form.sort_order}
                       onChange={(e) =>
-                        setForm((f) => ({
-                          ...f,
-                          sort_order: Number(e.target.value || 0),
-                        }))
+                        setForm((f) => ({ ...f, sort_order: Number(e.target.value || 0) }))
                       }
-                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                     />
                   </div>
                 </div>
 
-                {/* Image upload + preview */}
+                {/* Image upload */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Category Image</label>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 mb-2">
                     <button
                       type="button"
                       onClick={() => imageUploadRef.current?.click()}
@@ -700,13 +691,6 @@ const CategoriesPage: React.FC = () => {
                       <ImagePlus size={18} />
                       Upload Image
                     </button>
-                    <input
-                      ref={imageUploadRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleImageUpload}
-                    />
                     {form.image_url && (
                       <button
                         type="button"
@@ -719,9 +703,16 @@ const CategoriesPage: React.FC = () => {
                         Remove
                       </button>
                     )}
+                    <input
+                      ref={imageUploadRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageUpload}
+                    />
                   </div>
                   {imagePreview && (
-                    <div className="mt-3">
+                    <div className="mt-2">
                       <p className="text-xs text-slate-500 mb-1">Preview:</p>
                       <img
                         src={imagePreview}
@@ -742,12 +733,12 @@ const CategoriesPage: React.FC = () => {
                     rows={3}
                     value={form.description}
                     onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-base dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                    className="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                   />
                 </div>
 
                 <div className="flex items-center justify-between pt-4">
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Required fields are marked with *</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">* Required</p>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"

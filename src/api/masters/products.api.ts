@@ -30,13 +30,15 @@ export interface Product {
   meta_description?: string | null;
   canonical_url?: string | null;
   og_image?: string | null;
-  // New gemstone/metal fields
+  // Gemstone & metal fields
   diamond_pcs: number;
   diamond_carat: number;
   rate: number;
-  diamonds: any[]; // JSON array of gemstone objects
-  metal_type: string; // e.g., 'gold', 'platinum'
-  gold_carat: number; // e.g., 18, 22
+  diamonds: any[];            // array of gemstone objects
+  metal_type: string;
+  gold_carat: number;         // numeric (e.g., 18, 22)
+  total_weight: number;       // in grams
+  gold_weight: number;        // in grams
 }
 
 export interface ProductAsset {
@@ -132,6 +134,10 @@ export async function fetchProductAdmin(id: string): Promise<ProductResponse> {
   return apiFetch(`${ADMIN_BASE}/${encodeURIComponent(id)}`);
 }
 
+/* =========================================================
+   CREATE / UPDATE PAYLOADS – include every backend field
+========================================================= */
+
 export interface CreateProductPayload {
   title: string;
   slug: string;
@@ -145,13 +151,15 @@ export interface CreateProductPayload {
   sku?: string | null;
   available_qty?: number;
   moq?: number;
-  // New fields
+  metadata?: any;                   // JSON object
   diamond_pcs?: number;
   diamond_carat?: number;
   rate?: number;
   diamonds?: any[];
   metal_type?: string;
   gold_carat?: number;
+  total_weight?: number;            // grams
+  gold_weight?: number;             // grams
 }
 
 // POST /masters/products
@@ -178,13 +186,14 @@ export interface UpdateProductPayload {
   available_qty?: number;
   moq?: number;
   metadata?: any;
-  // New fields
   diamond_pcs?: number;
   diamond_carat?: number;
   rate?: number;
   diamonds?: any[];
   metal_type?: string;
   gold_carat?: number;
+  total_weight?: number;
+  gold_weight?: number;
 }
 
 // PUT /masters/products/admin/:id
