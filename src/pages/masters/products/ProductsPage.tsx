@@ -73,12 +73,12 @@ const DIAMOND_TYPE_OPTIONS = [
 ];
 
 const DIAMOND_COLOR_OPTIONS = [
-  "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "DE", "EF", "GH", "HI",
+  "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "DE", "EF","FG", "GH", "HI",
   "IJ", "JK", "KL", "LM", "Yellow", "Pink", "Blue", "Green", "White", "Champagne",
 ];
 
 const DIAMOND_CLARITY_OPTIONS = [
-  "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3", "VVS", "VS", "SI",
+  "IF", "VVS1", "VVS2", "VS1", "VS2", "SI1", "SI2", "I1", "I2", "I3", "VVS", "VS", "SI","VVS VS","VS SI", "SI I1"
 ];
 
 const DIAMOND_SHAPE_OPTIONS = [
