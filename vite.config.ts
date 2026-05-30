@@ -26,7 +26,7 @@ export default defineConfig(({ mode }) => ({
           ws: true,
         },
         "/uploads": {
-          target: "https://apiminalgems.exotech.co.in",
+          target: "http://localhost:4500",
           changeOrigin: true,
           secure: false,
         },

@@ -88,6 +88,9 @@ import AdminShippingRulesPage from "./pages/logistics/shipping/AdminShippingRule
 import PrintCenterPage from "./pages/misc/PrintCenterPage";
 import NotFoundPage from "./pages/misc/NotFoundPage";
 
+//content
+import HeroSlidesPage from "./pages/content/HeroSlidesPage";  
+
 const App: React.FC = () => {
   return (
     <>
@@ -184,9 +187,13 @@ const App: React.FC = () => {
           <Route path="security/logins" element={<AdminSecurityLogsPage />} />
           <Route path="security/alerts" element={<AdminSecurityAlertsPage />} />
 
+          {/* Content Management */}
+        <Route path="content/hero-slides" element={<HeroSlidesPage />} />
           {/* Misc */}
           <Route path="print" element={<PrintCenterPage />} />
         </Route>
+
+        
 
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />

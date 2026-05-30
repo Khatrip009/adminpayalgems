@@ -23,6 +23,7 @@ import {
   Lock,
   Clock,
   ShieldAlert,
+  Image,       // ← NEW
 } from "lucide-react";
 
 export interface AdminNavItem {
@@ -53,12 +54,20 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
     items: [
       { label: "Categories", path: "/admin/categories", icon: Database },
       { label: "Products", path: "/admin/products", icon: Package },
-      // Warehouse route not yet implemented – commented out
-      // { label: "Warehouses", path: "/admin/inventory/warehouses", icon: Store },
       { label: "Craftsmen", path: "/admin/craftsmen", icon: Users },
       { label: "Craftsman Accounts", path: "/admin/craftsman-accounts", icon: Receipt },
       { label: "Suppliers", path: "/admin/suppliers", icon: Store },
       { label: "Customers", path: "/admin/customers", icon: Users },
+    ],
+  },
+
+  /* =========================
+     CONTENT
+  ========================= */
+  {
+    title: "Content",
+    items: [
+      { label: "Hero Slides", path: "/admin/content/hero-slides", icon: Image },
     ],
   },
 
@@ -70,8 +79,7 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
     items: [
       { label: "Purchase Orders", path: "/admin/purchase-orders", icon: FileText },
       { label: "Goods Receipt (GRN)", path: "/admin/grn", icon: Receipt },
-      // Supplier invoices and payments are linked from supplier detail pages
-      { label: "Supplier Invoices", path: "/admin/supplier-invoices", icon: FileText }, // matches route /admin/supplier-invoices/:id
+      { label: "Supplier Invoices", path: "/admin/supplier-invoices", icon: FileText },
       { label: "Supplier Payments", path: "/admin/supplier-payments", icon: CreditCard },
       { label: "Supplier Ledger", path: "/admin/supplier-ledger", icon: ClipboardList },
     ],
@@ -156,8 +164,6 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
       { label: "Users", path: "/admin/users", icon: Users },
       { label: "Tax Rules", path: "/admin/settings/tax-rules", icon: Settings },
       { label: "My Profile", path: "/admin/profile", icon: User },
-      // Change password page not defined in App.tsx – uncomment when route added
-      // { label: "Change Password", path: "/admin/security/change-password", icon: Lock },
       { label: "Login Activity", path: "/admin/security/logins", icon: Clock },
       { label: "Security Alerts", path: "/admin/security/alerts", icon: ShieldAlert },
     ],
