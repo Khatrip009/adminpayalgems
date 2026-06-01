@@ -18,7 +18,8 @@ import DashboardHome from "./pages/dashboard/DashboardHome";
 // CRM / REPORTS
 import AdminAnalyticsOverviewPage from "./pages/AdminAnalyticsOverviewPage";
 import LeadsPage from "./pages/LeadsPage";
-import NotificationsAdminPage from "./pages/system/notifications/NotificationsAdminPage";
+// ✅ REPLACE old notifications page with the new full-featured one
+import AdminNotificationsPage from "./pages/admin/notifications/AdminNotificationsPage";
 
 // SYSTEM USERS
 import AdminUsersPage from "./pages/system/users/AdminUsersPage";
@@ -88,13 +89,12 @@ import AdminShippingRulesPage from "./pages/logistics/shipping/AdminShippingRule
 import PrintCenterPage from "./pages/misc/PrintCenterPage";
 import NotFoundPage from "./pages/misc/NotFoundPage";
 
-//content
-import HeroSlidesPage from "./pages/content/HeroSlidesPage";  
+// CONTENT
+import HeroSlidesPage from "./pages/content/HeroSlidesPage";
 
 const App: React.FC = () => {
   return (
     <>
-      {/* PWA installation prompt – shows on every page */}
       <PWAInstallPrompt />
 
       <Routes>
@@ -121,7 +121,8 @@ const App: React.FC = () => {
           {/* Reports / CRM */}
           <Route path="analytics" element={<AdminAnalyticsOverviewPage />} />
           <Route path="leads" element={<LeadsPage />} />
-          <Route path="notifications" element={<NotificationsAdminPage />} />
+          {/* ✅ Notifications – now using the full admin page */}
+          <Route path="notifications" element={<AdminNotificationsPage />} />
 
           {/* Masters */}
           <Route path="products/:id" element={<ProductDetailPage />} />
@@ -188,12 +189,11 @@ const App: React.FC = () => {
           <Route path="security/alerts" element={<AdminSecurityAlertsPage />} />
 
           {/* Content Management */}
-        <Route path="content/hero-slides" element={<HeroSlidesPage />} />
+          <Route path="content/hero-slides" element={<HeroSlidesPage />} />
+
           {/* Misc */}
           <Route path="print" element={<PrintCenterPage />} />
         </Route>
-
-        
 
         {/* 404 */}
         <Route path="*" element={<NotFoundPage />} />

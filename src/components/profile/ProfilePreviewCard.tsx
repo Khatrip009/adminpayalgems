@@ -1,3 +1,4 @@
+// src/components/profile/ProfilePreviewCard.tsx
 import React from "react";
 import { ExternalLink, User } from "lucide-react";
 
