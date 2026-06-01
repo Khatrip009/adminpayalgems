@@ -182,6 +182,16 @@ const ProductImage: React.FC<{ url: string; alt: string }> = ({ url, alt }) => {
 };
 
 /* =========================================================
+   SORT INDICATOR COMPONENT
+========================================================= */
+const SortIndicator: React.FC<{ sortKey: string; currentKey: string; sortDir: "asc" | "desc" }> = ({ 
+  sortKey, currentKey, sortDir 
+}) => {
+  if (sortKey !== currentKey) return <ChevronDown size={12} className="text-gray-400 opacity-0 group-hover:opacity-100" />;
+  return sortDir === "asc" ? <ChevronUp size={12} /> : <ChevronDown size={12} />;
+};
+
+/* =========================================================
    MAIN COMPONENT
 ========================================================= */
 
@@ -647,28 +657,159 @@ const Sales: React.FC = () => {
                   <th className="p-2 sm:p-3 border-b w-8"></th>
                   <th
                     onClick={() => handleSort("number")}
-                    className="cursor-pointer p-2 sm:p-3 border-b hover:bg-gray-200 transition"
+                    className="cursor-pointer p-2 sm:p-3 border-b hover:bg-gray-200 transition group"
                   >
-                    Invoice #
+                    <div className="flex items-center gap-1">
+                      Invoice #
+                      <SortIndicator sortKey={sortKey as string} currentKey="number" sortDir={sortDir} />
+                    </div>
                   </th>
                   <th className="p-2 sm:p-3 border-b">Image</th>
-                  <th className="p-2 sm:p-3 border-b">Item</th>
-                  <th className="p-2 sm:p-3 border-b text-center">Dia Pcs</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Dia Ct</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Diamond ₹</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Gold (g)</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Gold Ct</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Rate</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Gold ₹</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Making</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Profit</th>
-                  <th className="p-2 sm:p-3 border-b text-right">Selling ₹</th>
-                  <th className="p-2 sm:p-3 border-b text-right">USD Rate</th>
-                  <th className="p-2 sm:p-3 border-b text-right">USD Amount</th>
+                  <th
+                    onClick={() => handleSort("item")}
+                    className="cursor-pointer p-2 sm:p-3 border-b hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center gap-1">
+                      Item
+                      <SortIndicator sortKey={sortKey as string} currentKey="item" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("diamond_pcs")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-center hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-center gap-1">
+                      Dia Pcs
+                      <SortIndicator sortKey={sortKey as string} currentKey="diamond_pcs" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("diamond_carat")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Dia Ct
+                      <SortIndicator sortKey={sortKey as string} currentKey="diamond_carat" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("total_diamond_price")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Diamond ₹
+                      <SortIndicator sortKey={sortKey as string} currentKey="total_diamond_price" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("gold")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Gold (g)
+                      <SortIndicator sortKey={sortKey as string} currentKey="gold" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("gold_carat")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Gold Ct
+                      <SortIndicator sortKey={sortKey as string} currentKey="gold_carat" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("gold_rate")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Rate
+                      <SortIndicator sortKey={sortKey as string} currentKey="gold_rate" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("gold_price")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Gold ₹
+                      <SortIndicator sortKey={sortKey as string} currentKey="gold_price" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("total_making_cost")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Making
+                      <SortIndicator sortKey={sortKey as string} currentKey="total_making_cost" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("profit_amount")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Profit
+                      <SortIndicator sortKey={sortKey as string} currentKey="profit_amount" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("selling_price")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      Selling ₹
+                      <SortIndicator sortKey={sortKey as string} currentKey="selling_price" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("conversion_rate")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      USD Rate
+                      <SortIndicator sortKey={sortKey as string} currentKey="conversion_rate" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("final_amount_usd")}
+                    className="cursor-pointer p-2 sm:p-3 border-b text-right hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center justify-end gap-1">
+                      USD Amount
+                      <SortIndicator sortKey={sortKey as string} currentKey="final_amount_usd" sortDir={sortDir} />
+                    </div>
+                  </th>
                   <th className="p-2 sm:p-3 border-b">Remarks</th>
-                  <th className="p-2 sm:p-3 border-b">Customer</th>
-                  <th className="p-2 sm:p-3 border-b">Craftsman</th>
-                  <th className="p-2 sm:p-3 border-b whitespace-nowrap">Date</th>
+                  <th
+                    onClick={() => handleSort("customer_name")}
+                    className="cursor-pointer p-2 sm:p-3 border-b hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center gap-1">
+                      Customer
+                      <SortIndicator sortKey={sortKey as string} currentKey="customer_name" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("craftsman_name")}
+                    className="cursor-pointer p-2 sm:p-3 border-b hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center gap-1">
+                      Craftsman
+                      <SortIndicator sortKey={sortKey as string} currentKey="craftsman_name" sortDir={sortDir} />
+                    </div>
+                  </th>
+                  <th
+                    onClick={() => handleSort("created_at")}
+                    className="cursor-pointer p-2 sm:p-3 border-b whitespace-nowrap hover:bg-gray-200 transition group"
+                  >
+                    <div className="flex items-center gap-1">
+                      Date
+                      <SortIndicator sortKey={sortKey as string} currentKey="created_at" sortDir={sortDir} />
+                    </div>
+                  </th>
                   <th className="p-2 sm:p-3 border-b text-center">Invoice</th>
                   <th className="p-2 sm:p-3 border-b text-center">Edit</th>
                   <th className="p-2 sm:p-3 border-b text-center">Delete</th>
