@@ -73,6 +73,7 @@ import AdminReturnsPage from "./pages/production/finance/returns/AdminReturnsPag
 import AdminReturnDetailPage from "./pages/production/finance/returns/AdminReturnDetailPage";
 import AdminSettlementPage from "./pages/production/finance/settlement/AdminSettlementPage";
 import AdminTaxRulesPage from "./pages/production/finance/tax/AdminTaxRulesPage";
+import AdminOrderInvoiceDetailPage from "./pages/production/finance/invoices/AdminOrderInvoiceDetailPage";
 
 // SALES
 import AdminOrdersPage from "./pages/sales/orders/AdminOrdersPage";
@@ -89,7 +90,8 @@ import AdminShippingRulesPage from "./pages/logistics/shipping/AdminShippingRule
 // MISC
 import PrintCenterPage from "./pages/misc/PrintCenterPage";
 import NotFoundPage from "./pages/misc/NotFoundPage";
-
+import AdminIncomeReportPage from "./pages/finance/AdminIncomeReportPage";
+import AdminPaymentCollectionPage from "./pages/finance/AdminPaymentCollectionPage";
 // CONTENT
 import HeroSlidesPage from "./pages/content/HeroSlidesPage";
 import InstallButton from "./components/InstallButton";
@@ -171,6 +173,9 @@ const App: React.FC = () => {
           <Route path="returns/:id" element={<AdminReturnDetailPage />} />
           <Route path="settlements" element={<AdminSettlementPage />} />
           <Route path="settings/tax-rules" element={<AdminTaxRulesPage />} />
+          <Route path="finance/income" element={<AdminIncomeReportPage />} />
+          <Route path="finance/collections" element={<AdminPaymentCollectionPage />} />
+          <Route path="invoices/:id" element={<AdminOrderInvoiceDetailPage />} />
 
           {/* Sales */}
           <Route path="orders" element={<AdminOrdersPage />} />

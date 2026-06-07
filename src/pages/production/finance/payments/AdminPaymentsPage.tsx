@@ -1,5 +1,4 @@
 // src/pages/AdminPaymentsPage.tsx
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   CreditCard,
@@ -11,7 +10,6 @@ import {
   FileText,
   Eye,
   Search,
-  Filter,
 } from "lucide-react";
 
 import { useNavigate } from "react-router-dom";
@@ -30,8 +28,6 @@ import {
   type Settlement,
 } from "@/api/inventory/payments.api";
 
-import { getOrderById } from "@/api/sales/orders.api";
-
 const PAGE_LIMIT = 30;
 
 const money = (amount: number, cur = "INR") =>
@@ -46,7 +42,7 @@ const dateFmt = (v?: string | null) => {
 
 const badgeClass = (status: string) => {
   const s = (status || "").toLowerCase();
-  if (["paid", "success", "completed"].includes(s))
+  if (["paid", "success", "succeeded", "completed"].includes(s))
     return "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-200";
 
   if (["failed", "cancelled", "refused"].includes(s))
@@ -126,12 +122,7 @@ const AdminPaymentsPage: React.FC = () => {
     if (!q) return refunds;
 
     return refunds.filter((r) => {
-      const h = [
-        r.id,
-        r.status,
-        r.reason,
-        r.order_number,
-      ]
+      const h = [r.id, r.status, r.reason, r.order_number]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -144,12 +135,7 @@ const AdminPaymentsPage: React.FC = () => {
     if (!q) return invoices;
 
     return invoices.filter((i) => {
-      const h = [
-        i.id,
-        i.invoice_number,
-        i.order_number,
-        i.status,
-      ]
+      const h = [i.id, i.invoice_number, i.order_number, i.status]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -162,11 +148,7 @@ const AdminPaymentsPage: React.FC = () => {
     if (!q) return settlements;
 
     return settlements.filter((s) => {
-      const h = [
-        s.id,
-        s.provider,
-        s.reference_id,
-      ]
+      const h = [s.id, s.provider, s.reference_id]
         .filter(Boolean)
         .join(" ")
         .toLowerCase();
@@ -174,12 +156,9 @@ const AdminPaymentsPage: React.FC = () => {
     });
   }, [settlements, search]);
 
-
-  /* -----------------------------
-     Quick Stats Cards
-  ----------------------------- */
+  // ---------- Quick Stats Cards ----------
   const totalReceived = payments
-    .filter((p) => p.status === "paid")
+    .filter((p) => ["paid", "success", "succeeded"].includes(p.status?.toLowerCase()))
     .reduce((acc, x) => acc + (x.amount || 0), 0);
 
   const totalRefunded = refunds.reduce((acc, x) => acc + (x.amount || 0), 0);
@@ -188,10 +167,6 @@ const AdminPaymentsPage: React.FC = () => {
 
   const settlementTotal = settlements.reduce((acc, x) => acc + (x.amount || 0), 0);
 
-
-  /* -----------------------------
-     UI
-  ----------------------------- */
   return (
     <div className="relative">
       <AdminPageHeader
@@ -204,10 +179,7 @@ const AdminPaymentsPage: React.FC = () => {
       />
 
       <div className="px-6 pt-4 pb-10 space-y-10">
-
-        {/* =======================
-            KPIs
-        ======================= */}
+        {/* KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="rounded-2xl border border-slate-300 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-center gap-3">
@@ -242,11 +214,8 @@ const AdminPaymentsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* =======================
-            Search + Tabs
-        ======================= */}
+        {/* Search + Tabs */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Search bar */}
           <div className="relative w-full md:w-1/2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18} />
             <input
@@ -259,45 +228,19 @@ const AdminPaymentsPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              className={`px-4 py-2.5 rounded-full border text-sm font-medium ${tab === "payments"
-                ? "bg-sky-600 text-white border-sky-600"
-                : "bg-white border-slate-300 dark:bg-slate-900 dark:border-slate-700"
+            {(["payments", "refunds", "invoices", "settlements"] as const).map((t) => (
+              <button
+                key={t}
+                className={`px-4 py-2.5 rounded-full border text-sm font-medium ${
+                  tab === t
+                    ? "bg-sky-600 text-white border-sky-600"
+                    : "bg-white border-slate-300 dark:bg-slate-900 dark:border-slate-700"
                 }`}
-              onClick={() => setTab("payments")}
-            >
-              Payments
-            </button>
-
-            <button
-              className={`px-4 py-2.5 rounded-full border text-sm font-medium ${tab === "refunds"
-                ? "bg-sky-600 text-white border-sky-600"
-                : "bg-white border-slate-300 dark:bg-slate-900 dark:border-slate-700"
-                }`}
-              onClick={() => setTab("refunds")}
-            >
-              Refunds
-            </button>
-
-            <button
-              className={`px-4 py-2.5 rounded-full border text-sm font-medium ${tab === "invoices"
-                ? "bg-sky-600 text-white border-sky-600"
-                : "bg-white border-slate-300 dark:bg-slate-900 dark:border-slate-700"
-                }`}
-              onClick={() => setTab("invoices")}
-            >
-              Invoices
-            </button>
-
-            <button
-              className={`px-4 py-2.5 rounded-full border text-sm font-medium ${tab === "settlements"
-                ? "bg-sky-600 text-white border-sky-600"
-                : "bg-white border-slate-300 dark:bg-slate-900 dark:border-slate-700"
-                }`}
-              onClick={() => setTab("settlements")}
-            >
-              Settlements
-            </button>
+                onClick={() => setTab(t)}
+              >
+                {t.charAt(0).toUpperCase() + t.slice(1)}
+              </button>
+            ))}
 
             <button
               onClick={() => loadAll(page)}
@@ -309,33 +252,21 @@ const AdminPaymentsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* =======================
-            TABLE CONTENT
-        ======================= */}
-
+        {/* Tables */}
         {tab === "payments" && (
           <PaymentTable payments={filteredPayments} loading={loading} navigate={navigate} />
         )}
-
-        {tab === "refunds" && (
-          <RefundTable refunds={filteredRefunds} loading={loading} />
-        )}
-
+        {tab === "refunds" && <RefundTable refunds={filteredRefunds} loading={loading} />}
         {tab === "invoices" && (
           <InvoiceTable invoices={filteredInvoices} loading={loading} navigate={navigate} />
         )}
-
-        {tab === "settlements" && (
-          <SettlementTable settlements={filteredSettlements} loading={loading} />
-        )}
+        {tab === "settlements" && <SettlementTable settlements={filteredSettlements} loading={loading} />}
       </div>
     </div>
   );
 };
 
 export default AdminPaymentsPage;
-
-
 
 /* ============================================================================
    SUB-COMPONENTS
@@ -364,65 +295,40 @@ function PaymentTable({
               <th className="px-6 py-4 text-right">Action</th>
             </tr>
           </thead>
-
           <tbody>
             {loading ? (
               <tr>
                 <td colSpan={6} className="py-8 text-center text-lg">
-                  <Loader2 className="mx-auto animate-spin" />
-                  Loading...
+                  <Loader2 className="mx-auto animate-spin" /> Loading...
                 </td>
               </tr>
             ) : payments.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-lg">
-                  No payments found
-                </td>
+                <td colSpan={6} className="py-8 text-center text-lg">No payments found</td>
               </tr>
             ) : (
               payments.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
+                <tr key={p.id} className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                   <td className="px-6 py-4">
                     <div className="font-semibold">{p.provider}</div>
                     <div className="text-xs text-slate-500">{p.id}</div>
                   </td>
-
                   <td className="px-6 py-4">
                     {p.order_number ? (
-                      <button
-                        onClick={() => navigate(`/orders/${p.order_id}`)}
-                        className="text-sky-600 hover:underline"
-                      >
+                      <button onClick={() => navigate(`/admin/orders/${p.order_id}`)} className="text-sky-600 hover:underline">
                         #{p.order_number}
                       </button>
-                    ) : (
-                      "—"
-                    )}
+                    ) : "—"}
                   </td>
-
                   <td className="px-6 py-4 font-medium">{money(p.amount, p.currency)}</td>
-
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass(
-                        p.status
-                      )}`}
-                    >
-                      <CreditCard size={12} />
-                      {p.status}
+                    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass(p.status)}`}>
+                      <CreditCard size={12} /> {p.status}
                     </span>
                   </td>
-
                   <td className="px-6 py-4 text-sm">{dateFmt(p.created_at)}</td>
-
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => navigate(`/payments/${p.id}`)}
-                      className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-                    >
+                    <button onClick={() => navigate(`/admin/payments/${p.id}`)} className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800">
                       <Eye size={14} /> View
                     </button>
                   </td>
@@ -435,7 +341,6 @@ function PaymentTable({
     </div>
   );
 }
-
 
 function RefundTable({ refunds, loading }: { refunds: Refund[]; loading: boolean }) {
   return (
@@ -451,52 +356,22 @@ function RefundTable({ refunds, loading }: { refunds: Refund[]; loading: boolean
               <th className="px-6 py-4">Issued</th>
             </tr>
           </thead>
-
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="py-8 text-center text-lg">
-                  <Loader2 className="mx-auto animate-spin" />
-                  Loading...
-                </td>
-              </tr>
+              <tr><td colSpan={5} className="py-8 text-center"><Loader2 className="mx-auto animate-spin" /> Loading...</td></tr>
             ) : refunds.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="py-8 text-center text-lg">
-                  No refunds found
-                </td>
-              </tr>
+              <tr><td colSpan={5} className="py-8 text-center">No refunds found</td></tr>
             ) : (
               refunds.map((r) => (
-                <tr
-                  key={r.id}
-                  className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
-                  <td className="px-6 py-4">
-                    <div className="font-semibold">{r.id.slice(0, 10)}...</div>
-                  </td>
-
-                  <td className="px-6 py-4">
-                    {r.order_number ? (
-                      <span className="text-sky-600">#{r.order_number}</span>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-
+                <tr key={r.id} className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
+                  <td className="px-6 py-4"><div className="font-semibold">{r.id.slice(0, 10)}...</div></td>
+                  <td className="px-6 py-4">{r.order_number ? `#${r.order_number}` : "—"}</td>
                   <td className="px-6 py-4 font-medium">{money(r.amount, r.currency)}</td>
-
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass(
-                        r.status
-                      )}`}
-                    >
-                      <RotateCcw size={12} />
-                      {r.status}
+                    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass(r.status)}`}>
+                      <RotateCcw size={12} /> {r.status}
                     </span>
                   </td>
-
                   <td className="px-6 py-4 text-sm">{dateFmt(r.created_at)}</td>
                 </tr>
               ))
@@ -507,7 +382,6 @@ function RefundTable({ refunds, loading }: { refunds: Refund[]; loading: boolean
     </div>
   );
 }
-
 
 function InvoiceTable({
   invoices,
@@ -532,65 +406,44 @@ function InvoiceTable({
               <th className="px-6 py-4 text-right">Action</th>
             </tr>
           </thead>
-
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-lg">
-                  <Loader2 className="mx-auto animate-spin" />
-                  Loading...
+                <td colSpan={6} className="py-8 text-center">
+                  <Loader2 className="mx-auto animate-spin" /> Loading...
                 </td>
               </tr>
             ) : invoices.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-lg">
-                  No invoices found
-                </td>
+                <td colSpan={6} className="py-8 text-center">No invoices found</td>
               </tr>
             ) : (
               invoices.map((i) => (
-                <tr
-                  key={i.id}
-                  className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
+                <tr key={i.id} className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                   <td className="px-6 py-4">
                     <div className="font-semibold">{i.invoice_number}</div>
                     <div className="text-xs text-slate-500">{i.id}</div>
-                  </td>
-
+                   </td>
                   <td className="px-6 py-4">
                     {i.order_number ? (
                       <button
-                        onClick={() => navigate(`/orders/${i.order_id}`)}
+                        onClick={() => navigate(`/admin/orders/${i.order_id}`)}
                         className="text-sky-600 hover:underline"
                       >
                         #{i.order_number}
                       </button>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-
-                  <td className="px-6 py-4 font-medium">
-                    {money(i.grand_total, i.currency)}
-                  </td>
-
+                    ) : "—"}
+                   </td>
+                  <td className="px-6 py-4 font-medium">{money(i.grand_total, i.currency)}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass(
-                        i.status
-                      )}`}
-                    >
-                      <FileText size={12} />
-                      {i.status}
+                    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${badgeClass(i.status)}`}>
+                      <FileText size={12} /> {i.status}
                     </span>
                   </td>
-
                   <td className="px-6 py-4 text-sm">{dateFmt(i.issued_at)}</td>
-
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() => navigate(`/invoices/${i.id}`)}
+                      onClick={() => navigate(`/admin/invoices/${i.id}`)}
                       className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
                     >
                       <Eye size={14} /> View
@@ -605,7 +458,6 @@ function InvoiceTable({
     </div>
   );
 }
-
 
 function SettlementTable({
   settlements,
@@ -626,30 +478,17 @@ function SettlementTable({
               <th className="px-6 py-4">Date</th>
             </tr>
           </thead>
-
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={4} className="py-8 text-center text-lg">
-                  <Loader2 className="mx-auto animate-spin" />
-                  Loading...
-                </td>
-              </tr>
+              <tr><td colSpan={4} className="py-8 text-center"><Loader2 className="mx-auto animate-spin" /> Loading...</td></tr>
             ) : settlements.length === 0 ? (
-              <tr>
-                <td colSpan={4} className="py-8 text-center text-lg">
-                  No settlement records found
-                </td>
-              </tr>
+              <tr><td colSpan={4} className="py-8 text-center">No settlement records found</td></tr>
             ) : (
               settlements.map((s) => (
-                <tr
-                  key={s.id}
-                  className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                >
+                <tr key={s.id} className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800">
                   <td className="px-6 py-4">{s.provider}</td>
                   <td className="px-6 py-4">{s.reference_id || "—"}</td>
-                  <td className="px-6 py-4 font-medium">{money(s.amount, s.currency)}</td>
+                  <td className="px-6 py-4 font-medium">{money(s.amount)}</td>
                   <td className="px-6 py-4 text-sm">{dateFmt(s.settlement_date)}</td>
                 </tr>
               ))

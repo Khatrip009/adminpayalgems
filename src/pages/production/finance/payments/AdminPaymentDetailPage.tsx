@@ -17,6 +17,7 @@ import { toast } from "react-hot-toast";
 import {
   getPaymentById,
   getRefundsByPayment,
+  getInvoicesByPayment,
   createRefund,
   getInvoicesByOrder,
   type Payment,
@@ -59,33 +60,31 @@ export default function AdminPaymentDetailPage() {
 
   const [refundAmount, setRefundAmount] = useState<string>("");
 
-  async function load() {
-    if (!paymentId) return;
+async function load() {
+  if (!paymentId) return;
+  setLoading(true);
+  try {
+    const p = await getPaymentById(paymentId);
+    setPayment(p.payment);
 
-    setLoading(true);
-    try {
-      const p = await getPaymentById(paymentId);
-      setPayment(p.payment);
-
-      if (p.payment.order_id) {
-        const o = await getOrderById(p.payment.order_id);
-        setOrder(o.order);
-      }
-
-      const r = await getRefundsByPayment(paymentId);
-      setRefunds(r.refunds);
-
-      if (p.payment.order_id) {
-        const inv = await getInvoicesByOrder(p.payment.order_id);
-        setInvoices(inv.invoices);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to load payment details");
-    } finally {
-      setLoading(false);
+    if (p.payment.order_id) {
+      const o = await getOrderById(p.payment.order_id);
+      setOrder(o.order);
     }
+
+    const r = await getRefundsByPayment(paymentId);
+    setRefunds(r.refunds);
+
+    // ✅ FIXED – fetch invoices by payment ID
+    const inv = await getInvoicesByPayment(paymentId);
+    setInvoices(inv.invoices);
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to load payment details");
+  } finally {
+    setLoading(false);
   }
+}
 
   useEffect(() => {
     load();
@@ -316,7 +315,7 @@ export default function AdminPaymentDetailPage() {
                     </div>
 
                     <button
-                      onClick={() => navigate(`/invoices/${inv.id}`)}
+                      onClick={() => navigate(`/admin/invoices/${inv.id}`)}
                       className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-3 py-1.5 text-sm hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
                     >
                       <FileText size={14} /> View Invoice

@@ -354,7 +354,7 @@ const AdminSettlementPage: React.FC = () => {
                         {formatDate(o.placed_at)}
                       </td>
                       <td className="px-6 py-3 text-sm font-semibold">
-                        {formatCurrency(o.grand_total)}
+                        {formatCurrency(o.total_amount || o.grand_total || o.total)}
                       </td>
                       <td className="px-6 py-3 text-xs">
                         <span
@@ -379,7 +379,7 @@ const AdminSettlementPage: React.FC = () => {
                       </td>
                       <td className="px-6 py-3 text-right text-xs">
                         <Link
-                          to={`/orders/${o.id}`}
+                          to={`/admin/orders/${o.id}`}
                           className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
                         >
                           Details

@@ -23,7 +23,9 @@ import {
   Lock,
   Clock,
   ShieldAlert,
-  Image,       // ← NEW
+  Image,
+  DollarSign,        // ← for Income Report
+  HandCoins,         // ← for Payment Collection
 } from "lucide-react";
 
 export interface AdminNavItem {
@@ -119,6 +121,17 @@ export const ADMIN_NAV_SECTIONS: AdminNavSection[] = [
       { label: "Payments", path: "/admin/payments", icon: CreditCard },
       { label: "Returns", path: "/admin/returns", icon: Receipt },
       { label: "Settlements", path: "/admin/settlements", icon: ClipboardList },
+    ],
+  },
+
+  /* =========================
+     FINANCE (NEW)
+  ========================= */
+  {
+    title: "Finance",
+    items: [
+      { label: "Income Report", path: "/admin/finance/income", icon: DollarSign },
+      { label: "Payment Collection", path: "/admin/finance/collections", icon: HandCoins },
     ],
   },
 
