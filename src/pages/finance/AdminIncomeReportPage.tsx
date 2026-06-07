@@ -133,47 +133,48 @@ const AdminIncomeReportPage: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Income Report</h1>
-        <div className="flex gap-2">
-          <Button onClick={loadReport} variant="outline" disabled={loading}>
+    <div className="container mx-auto py-4 sm:py-6 space-y-4 sm:space-y-6">
+      {/* Header – wrap buttons on mobile */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold">Income Report</h1>
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={loadReport} variant="outline" disabled={loading} size="sm">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button onClick={handleExportCSV} variant="outline">
-            <Download className="w-4 h-4 mr-2" /> Export CSV
+          <Button onClick={handleExportCSV} variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" /> CSV
           </Button>
-          <Button onClick={handleExportExcel} variant="outline">
-            <Download className="w-4 h-4 mr-2" /> Export Excel
+          <Button onClick={handleExportExcel} variant="outline" size="sm">
+            <Download className="w-4 h-4 mr-2" /> Excel
           </Button>
-          <Button onClick={handleExportPDF} variant="outline">
-            <FileText className="w-4 h-4 mr-2" /> Export PDF
+          <Button onClick={handleExportPDF} variant="outline" size="sm">
+            <FileText className="w-4 h-4 mr-2" /> PDF
           </Button>
         </div>
       </div>
 
-      {/* Filters */}
+      {/* Filters – stack on mobile */}
       <Card>
-        <CardHeader>
-          <CardTitle>Filters</CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base sm:text-lg">Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-4 items-end">
-            <div>
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+            <div className="w-full sm:w-auto">
               <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full sm:w-auto" />
             </div>
-            <div>
+            <div className="w-full sm:w-auto">
               <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full sm:w-auto" />
             </div>
-            <div>
+            <div className="w-full sm:w-auto">
               <label className="block text-sm font-medium text-gray-700 mb-1">Group By</label>
               <select
                 value={groupBy}
                 onChange={(e) => setGroupBy(e.target.value as any)}
-                className="border border-gray-300 rounded-md p-2 focus:ring-pink-500 focus:border-pink-500"
+                className="w-full sm:w-auto border border-gray-300 rounded-md p-2 focus:ring-pink-500 focus:border-pink-500"
               >
                 <option value="day">Day</option>
                 <option value="week">Week</option>
@@ -184,16 +185,16 @@ const AdminIncomeReportPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Summary Cards – stack on mobile */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Income</p>
-                <p className="text-2xl font-bold">₹ {totalIncome.toFixed(2)}</p>
+                <p className="text-xs sm:text-sm text-gray-500">Total Income</p>
+                <p className="text-xl sm:text-2xl font-bold">₹ {totalIncome.toFixed(2)}</p>
               </div>
-              <TrendingUp className="h-8 w-8 text-emerald-500" />
+              <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 text-emerald-500" />
             </div>
           </CardContent>
         </Card>
@@ -201,10 +202,10 @@ const AdminIncomeReportPage: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Total Transactions</p>
-                <p className="text-2xl font-bold">{totalTransactions}</p>
+                <p className="text-xs sm:text-sm text-gray-500">Total Transactions</p>
+                <p className="text-xl sm:text-2xl font-bold">{totalTransactions}</p>
               </div>
-              <CreditCard className="h-8 w-8 text-blue-500" />
+              <CreditCard className="h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
             </div>
           </CardContent>
         </Card>
@@ -212,88 +213,92 @@ const AdminIncomeReportPage: React.FC = () => {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-500">Average Daily Income</p>
-                <p className="text-2xl font-bold">
+                <p className="text-xs sm:text-sm text-gray-500">Average Daily Income</p>
+                <p className="text-xl sm:text-2xl font-bold">
                   ₹ {(totalIncome / Math.max(1, chartData.length)).toFixed(2)}
                 </p>
               </div>
-              <BarChart3 className="h-8 w-8 text-purple-500" />
+              <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-purple-500" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Chart */}
+      {/* Chart – responsive height */}
       <Card>
         <CardHeader>
-          <CardTitle>Income Trend</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Income Trend</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="h-64 flex items-center justify-center">Loading chart...</div>
+            <div className="h-48 sm:h-64 flex items-center justify-center">Loading chart...</div>
           ) : chartData.length === 0 ? (
-            <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className="h-48 sm:h-64 flex items-center justify-center text-gray-500">
               No data available for selected period
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={350}>
-              <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="period" />
-                <YAxis />
-                <Tooltip formatter={(value) => `₹ ${value}`} />
-                <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="total"
-                  stroke="#0F172A"
-                  strokeWidth={2}
-                  dot={{ r: 4 }}
-                  name="Total Income (₹)"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="h-64 sm:h-[350px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="period" tick={{ fontSize: 12 }} />
+                  <YAxis tick={{ fontSize: 12 }} />
+                  <Tooltip formatter={(value) => `₹ ${value}`} />
+                  <Legend wrapperStyle={{ fontSize: 12 }} />
+                  <Line
+                    type="monotone"
+                    dataKey="total"
+                    stroke="#0F172A"
+                    strokeWidth={2}
+                    dot={{ r: 3 }}
+                    name="Total Income (₹)"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Data Table */}
+      {/* Data Table – horizontally scrollable on small screens */}
       <Card>
         <CardHeader>
-          <CardTitle>Income Breakdown</CardTitle>
+          <CardTitle className="text-base sm:text-lg">Income Breakdown</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Period</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment Method</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Amount (₹)</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Transactions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {loading ? (
+            <div className="min-w-[600px] sm:min-w-full">
+              <table className="w-full text-left text-sm divide-y divide-gray-200">
+                <thead className="bg-gray-50 text-xs font-medium text-gray-500 uppercase">
                   <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center">Loading...</td>
+                    <th className="px-3 py-3">Period</th>
+                    <th className="px-3 py-3">Payment Method</th>
+                    <th className="px-3 py-3 text-right">Total Amount (₹)</th>
+                    <th className="px-3 py-3 text-right">Transactions</th>
                   </tr>
-                ) : tableData.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-8 text-center text-gray-500">No data found</td>
-                  </tr>
-                ) : (
-                  tableData.map((row, idx) => (
-                    <tr key={idx}>
-                      <td className="px-4 py-3 text-sm">{format(parseISO(row.period), "PPP")}</td>
-                      <td className="px-4 py-3 text-sm">{row.payment_method}</td>
-                      <td className="px-4 py-3 text-sm text-right">₹ {row.total_amount.toFixed(2)}</td>
-                      <td className="px-4 py-3 text-sm text-right">{row.transaction_count}</td>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {loading ? (
+                    <tr>
+                      <td colSpan={4} className="px-3 py-8 text-center">Loading...</td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : tableData.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-3 py-8 text-center text-gray-500">No data found</td>
+                    </tr>
+                  ) : (
+                    tableData.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-gray-50">
+                        <td className="px-3 py-2 whitespace-nowrap">{format(parseISO(row.period), "PPP")}</td>
+                        <td className="px-3 py-2">{row.payment_method}</td>
+                        <td className="px-3 py-2 text-right">₹ {row.total_amount.toFixed(2)}</td>
+                        <td className="px-3 py-2 text-right">{row.transaction_count}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </CardContent>
       </Card>

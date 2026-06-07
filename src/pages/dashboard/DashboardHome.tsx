@@ -1,3 +1,4 @@
+// src/pages/dashboard/DashboardHome.tsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -126,7 +127,7 @@ const statusColor = (status: string) => {
 };
 
 /* =====================================================
-   KPI Card Component
+   KPI Card Component (responsive)
 ===================================================== */
 
 const KPI = ({
@@ -145,18 +146,20 @@ const KPI = ({
   <div className="relative rounded-2xl border bg-white p-4 shadow-sm transition hover:shadow-md">
     <div className="flex justify-between">
       <div>
-        <p className="text-[11px] uppercase tracking-wide text-slate-500">
+        <p className="text-[10px] sm:text-[11px] uppercase tracking-wide text-slate-500">
           {title}
         </p>
-        <p className="mt-1 text-2xl font-semibold text-slate-900">
+        <p className="mt-1 text-xl sm:text-2xl font-semibold text-slate-900">
           {value ?? "—"}
         </p>
         {sub && (
-          <p className="mt-1 text-[11px] text-slate-500 truncate">{sub}</p>
+          <p className="mt-1 text-[10px] sm:text-[11px] text-slate-500 truncate max-w-[160px]">
+            {sub}
+          </p>
         )}
       </div>
       <div
-        className={`flex h-10 w-10 items-center justify-center rounded-full ${accent}`}
+        className={`flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full ${accent}`}
       >
         {icon}
       </div>
@@ -170,7 +173,6 @@ const KPI = ({
 
 const Skeleton = () => (
   <div className="space-y-6 animate-pulse">
-    {/* Welcome section skeleton */}
     <div className="rounded-2xl border bg-white p-5 shadow-sm">
       <div className="h-3 bg-gray-200 rounded w-24 mb-2" />
       <div className="h-5 bg-gray-200 rounded w-48 mb-3" />
@@ -180,7 +182,6 @@ const Skeleton = () => (
       </div>
     </div>
 
-    {/* KPI cards skeleton */}
     <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
       {[...Array(8)].map((_, i) => (
         <div key={i} className="rounded-2xl border bg-white p-4 shadow-sm">
@@ -196,7 +197,6 @@ const Skeleton = () => (
       ))}
     </div>
 
-    {/* Recent orders skeleton */}
     <div className="rounded-2xl border bg-white p-5 shadow-sm space-y-3">
       <div className="h-4 bg-gray-200 rounded w-32" />
       {[...Array(3)].map((_, i) => (
@@ -252,7 +252,7 @@ const DashboardHome: React.FC = () => {
       : null;
 
   return (
-    <div className="w-full pb-10">
+    <div className="w-full pb-8 sm:pb-10">
       {/* Loading state */}
       {loading && !data && <Skeleton />}
 
@@ -272,28 +272,28 @@ const DashboardHome: React.FC = () => {
 
       {/* Actual dashboard content */}
       {data && (
-        <div className="space-y-6">
+        <div className="space-y-5 sm:space-y-6">
           {/* Welcome & Quick Stats */}
-          <section className="rounded-2xl border bg-white p-5 shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-slate-500">
+          <section className="rounded-2xl border bg-white p-4 sm:p-5 shadow-sm">
+            <p className="text-[10px] sm:text-xs uppercase tracking-wide text-slate-500">
               Welcome back
             </p>
-            <h2 className="text-lg font-semibold text-slate-900">
+            <h2 className="text-base sm:text-lg font-semibold text-slate-900">
               {adminName}
             </h2>
 
-            <div className="mt-3 flex flex-wrap gap-3 text-xs">
+            <div className="mt-3 flex flex-wrap gap-2 text-xs">
               {conversion !== null && (
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                <span className="inline-flex items-center rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">
                   <Target className="mr-1 h-3 w-3" />
                   Conversion {conversion}%
                 </span>
               )}
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1">
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1">
                 <BarChart3 className="mr-1 h-3 w-3" />
                 Orders {orders}
               </span>
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1">
+              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-1">
                 <Users className="mr-1 h-3 w-3" />
                 Users {data?.users.total}
               </span>
@@ -301,7 +301,7 @@ const DashboardHome: React.FC = () => {
           </section>
 
           {/* Primary KPIs */}
-          <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
             <KPI
               title="Visitors Today"
               value={data.visitors.today}
@@ -332,7 +332,7 @@ const DashboardHome: React.FC = () => {
           </section>
 
           {/* Secondary KPIs */}
-          <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+          <section className="grid gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-4">
             <KPI
               title="Products"
               value={data.products.total}
@@ -364,7 +364,7 @@ const DashboardHome: React.FC = () => {
           </section>
 
           {/* Latest Orders */}
-          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border bg-white p-4 sm:p-5 shadow-sm">
             <div className="mb-3 flex justify-between">
               <h3 className="text-sm font-semibold text-slate-900">
                 Latest Orders
@@ -389,7 +389,7 @@ const DashboardHome: React.FC = () => {
                       <div className="font-medium text-slate-900">
                         #{o.order_number}
                       </div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[10px] sm:text-[11px] text-slate-500">
                         {o.customer_name || "Guest"} · {date(o.placed_at)}
                       </div>
                     </div>
@@ -403,7 +403,7 @@ const DashboardHome: React.FC = () => {
           </section>
 
           {/* Latest Leads */}
-          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border bg-white p-4 sm:p-5 shadow-sm">
             <div className="mb-3 flex justify-between">
               <h3 className="text-sm font-semibold text-slate-900">
                 Recent Leads
@@ -426,7 +426,7 @@ const DashboardHome: React.FC = () => {
                   >
                     <div>
                       <div className="font-medium text-slate-900">{l.name}</div>
-                      <div className="text-[11px] text-slate-500">
+                      <div className="text-[10px] sm:text-[11px] text-slate-500">
                         {l.email || l.phone || ""}
                       </div>
                     </div>
@@ -444,32 +444,32 @@ const DashboardHome: React.FC = () => {
           </section>
 
           {/* Quick Actions */}
-          <section className="rounded-2xl border bg-white p-5 shadow-sm">
+          <section className="rounded-2xl border bg-white p-4 sm:p-5 shadow-sm">
             <h3 className="text-sm font-semibold text-slate-900 mb-3">
               Quick Actions
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
               <Link
                 to="/orders/new"
-                className="flex items-center gap-2 rounded-xl border bg-indigo-50 px-4 py-3 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition"
+                className="flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-indigo-50 px-2 sm:px-4 py-2.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition"
               >
                 <ShoppingBag className="h-4 w-4" /> New Order
               </Link>
               <Link
                 to="/products/new"
-                className="flex items-center gap-2 rounded-xl border bg-amber-50 px-4 py-3 text-xs font-medium text-amber-700 hover:bg-amber-100 transition"
+                className="flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-amber-50 px-2 sm:px-4 py-2.5 text-xs font-medium text-amber-700 hover:bg-amber-100 transition"
               >
                 <Package className="h-4 w-4" /> Add Product
               </Link>
               <Link
                 to="/leads/new"
-                className="flex items-center gap-2 rounded-xl border bg-emerald-50 px-4 py-3 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition"
+                className="flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-emerald-50 px-2 sm:px-4 py-2.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100 transition"
               >
                 <UserPlus className="h-4 w-4" /> Add Lead
               </Link>
               <Link
                 to="/customers"
-                className="flex items-center gap-2 rounded-xl border bg-teal-50 px-4 py-3 text-xs font-medium text-teal-700 hover:bg-teal-100 transition"
+                className="flex items-center justify-center sm:justify-start gap-2 rounded-xl border bg-teal-50 px-2 sm:px-4 py-2.5 text-xs font-medium text-teal-700 hover:bg-teal-100 transition"
               >
                 <CreditCard className="h-4 w-4" /> Customers
               </Link>
