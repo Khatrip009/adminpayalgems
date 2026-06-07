@@ -56,7 +56,7 @@ const formatDate = (dateStr: string): string => {
   });
 };
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "") || "https://apiminalgems.exotech.co.in/api";
+const API_BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/+$/, "") || "http://localhost:4500/api";
 
 const Sales: React.FC = () => {
   const [items, setItems] = useState<Sale[]>([]);

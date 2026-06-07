@@ -1,6 +1,7 @@
 // src/lib/apiClient.ts
 // Hardened API client – TypeScript / JavaScript compatible
 // Supports auto token refresh, single‑refresh queue, query params, and download helper
+// No automatic redirect – throws 401 for the caller to handle.
 
 export interface ApiResponse<T = any> {
   ok: boolean;
@@ -14,7 +15,7 @@ export interface ApiResponse<T = any> {
 ===================================================== */
 const API_BASE =
   (import.meta as any).env?.VITE_API_BASE_URL?.replace(/\/+$/, "") ||
-  "https://apiminalgems.exotech.co.in/api";
+  "http://localhost:4500/api";
 
 export const API_BASE_URL = API_BASE;
 
@@ -91,7 +92,8 @@ async function refreshAccessToken(): Promise<string | null> {
     waiting.forEach((fn) => fn(null));
     waiting = [];
     return null;
-  } catch {
+  } catch (err) {
+    console.error("Token refresh failed:", err);
     waiting.forEach((fn) => fn(null));
     waiting = [];
     return null;
@@ -160,36 +162,37 @@ export async function apiFetch<T = any>(
   opts.headers = headers;
   opts.credentials = "include";
 
-  const res = await fetch(url, opts);
+  let res: Response;
+  try {
+    res = await fetch(url, opts);
+  } catch (err) {
+    console.error("Network error:", err);
+    throw { status: 0, data: { message: "Network error – check your connection" } };
+  }
 
-  /* ---------- 401 HANDLING ---------- */
+  /* ---------- 401 HANDLING (NO AUTOMATIC REDIRECT) ---------- */
   if (res.status === 401) {
     const isAuthEndpoint =
       url.includes("/auth/login") || url.includes("/auth/refresh");
 
-    if (isAuthEndpoint || opts.__retry) {
-      clearAuth();
-      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
-        window.location.replace("/login");
-      }
-      throw { status: 401, data: { message: "Session expired" } };
+    // Do not retry auth endpoints or already retried requests
+    if (opts.__retry || isAuthEndpoint) {
+      throw { status: 401, data: { message: "Session expired. Please log in again." } };
     }
 
+    // Attempt to refresh token once
     const newToken = await refreshAccessToken();
     if (!newToken) {
       clearAuth();
-      if (typeof window !== "undefined") {
-        window.location.replace("/login");
-      }
-      throw { status: 401, data: { message: "Session expired" } };
+      throw { status: 401, data: { message: "Session expired. Please log in again." } };
     }
 
+    // Retry original request with new token
     opts.__retry = true;
     opts.headers = {
       ...(opts.headers || {}),
       Authorization: `Bearer ${newToken}`,
     };
-
     return apiFetch<T>(path, opts);
   }
 
