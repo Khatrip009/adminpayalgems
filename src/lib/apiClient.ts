@@ -129,9 +129,10 @@ export async function apiFetch<T = any>(
     if (q) url += `?${q}`;
   }
 
-  const opts: RequestInit & { __retry?: boolean; responseType?: string } = {
-    ...options,
-  };
+  const opts: RequestInit & {
+    __retry?: boolean;
+    responseType?: "json" | "blob";
+  } = { ...options };
   const headers: Record<string, string> = {};
 
   // Convert any existing headers to a plain object
@@ -193,6 +194,7 @@ export async function apiFetch<T = any>(
       ...(opts.headers || {}),
       Authorization: `Bearer ${newToken}`,
     };
+    // Recursive call – pass the same options (already correctly typed)
     return apiFetch<T>(path, opts);
   }
 
@@ -238,7 +240,10 @@ export const api = {
 
   /** File download helper */
   download: async (path: string, filename?: string) => {
-    const blob = await apiFetch<Blob>(path, { method: "GET", responseType: "blob" });
+    const blob = await apiFetch<Blob>(path, {
+      method: "GET",
+      responseType: "blob" as const, // ✅ ensure literal type
+    });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = filename || "download";
