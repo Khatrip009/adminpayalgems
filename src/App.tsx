@@ -92,12 +92,13 @@ import NotFoundPage from "./pages/misc/NotFoundPage";
 
 // CONTENT
 import HeroSlidesPage from "./pages/content/HeroSlidesPage";
-
+import InstallButton from "./components/InstallButton";
 const App: React.FC = () => {
   return (
     <>
       <PWAInstallPrompt />
-      <InstallBanner />      {/* ✅ added – shows custom install banner */}
+      <InstallBanner />
+      <InstallButton />      {/* ✅ added – shows custom install banner */}
 
       <Routes>
         {/* Redirect root to admin */}
