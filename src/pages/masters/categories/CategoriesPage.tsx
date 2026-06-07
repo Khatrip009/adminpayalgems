@@ -134,13 +134,11 @@ const CategoriesPage: React.FC = () => {
     loadCategories();
   }, []); // initial load
 
-  // Refetch when filters change, resetting page
   useEffect(() => {
     setPage(1);
     loadCategories();
   }, [tradeType]);
 
-  // Refetch on search
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(1);
@@ -183,7 +181,7 @@ const CategoriesPage: React.FC = () => {
     try {
       await deleteCategory(cat.id);
       toast.success("Category deleted.");
-      loadCategories(); // refresh from server
+      loadCategories();
     } catch (err) {
       console.error("Failed to delete category", err);
       toast.error("Failed to delete category.");
@@ -218,7 +216,7 @@ const CategoriesPage: React.FC = () => {
       setCurrentCategory(null);
       setForm(blankCategoryForm);
       setImagePreview(null);
-      loadCategories(); // refresh from server
+      loadCategories();
     } catch (err) {
       console.error("Failed to save category", err);
       toast.error("Failed to save category.");
@@ -395,10 +393,10 @@ const CategoriesPage: React.FC = () => {
         subtitle="Organize products by category and trade type."
         breadcrumbs={[{ label: "Dashboard", path: "/" }, { label: "Categories" }]}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={handleExportCsv}
-              className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             >
               <Download size={16} /> Export CSV
             </button>
@@ -406,7 +404,7 @@ const CategoriesPage: React.FC = () => {
             <button
               onClick={handleImportClick}
               disabled={importing}
-              className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+              className="flex items-center gap-2 rounded-full border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
             >
               {importing ? <Loader2 className="animate-spin" size={16} /> : <Upload size={16} />}
               Import CSV
@@ -414,7 +412,7 @@ const CategoriesPage: React.FC = () => {
 
             <button
               onClick={openCreateModal}
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 px-5 py-2.5 text-sm font-semibold text-white shadow-md hover:brightness-110"
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-sky-500 px-4 py-2 text-sm font-semibold text-white shadow-md hover:brightness-110"
             >
               <Plus size={16} /> New Category
             </button>
@@ -430,7 +428,7 @@ const CategoriesPage: React.FC = () => {
         }
       />
 
-      <div className="px-6 pt-4 pb-8 space-y-8">
+      <div className="px-4 sm:px-6 pt-4 pb-8 space-y-8">
         {importSummary && (
           <div className="rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-100">
             {importSummary}
@@ -457,7 +455,7 @@ const CategoriesPage: React.FC = () => {
             </button>
           </form>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <select
               value={tradeType}
               onChange={(e) => setTradeType(e.target.value as CategoryTradeType | "")}
@@ -481,91 +479,94 @@ const CategoriesPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Table with horizontal scroll on mobile */}
         <div className="overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="overflow-x-auto">
-            <table className="min-w-full text-left text-sm text-slate-800 dark:text-slate-200">
-              <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                <tr>
-                  <th className="px-4 py-3">Image</th>
-                  <th className="px-4 py-3">Name</th>
-                  <th className="px-4 py-3">Slug</th>
-                  <th className="px-4 py-3">Trade Type</th>
-                  <th className="px-4 py-3">Products</th>
-                  <th className="px-4 py-3 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? (
+            <div className="min-w-[600px]">
+              <table className="w-full text-left text-sm text-slate-800 dark:text-slate-200">
+                <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                   <tr>
-                    <td colSpan={6} className="py-8 text-center">
-                      <Loader2 className="mx-auto animate-spin" />
-                      <span className="ml-2">Loading...</span>
-                    </td>
+                    <th className="px-3 py-3 sm:px-4">Image</th>
+                    <th className="px-3 py-3 sm:px-4">Name</th>
+                    <th className="px-3 py-3 sm:px-4">Slug</th>
+                    <th className="px-3 py-3 sm:px-4">Trade Type</th>
+                    <th className="px-3 py-3 sm:px-4">Products</th>
+                    <th className="px-3 py-3 sm:px-4 text-right">Actions</th>
                   </tr>
-                ) : categories.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center">
-                      No categories found
-                    </td>
-                  </tr>
-                ) : (
-                  categories.map((cat) => (
-                    <tr
-                      key={cat.id}
-                      className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
-                    >
-                      <td className="px-4 py-3">
-                        {cat.image_url ? (
-                          <img
-                            src={cat.image_url}
-                            alt={cat.name}
-                            className="h-10 w-10 rounded object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = "none";
-                            }}
-                          />
-                        ) : (
-                          <div className="flex h-10 w-10 items-center justify-center rounded bg-slate-100 text-slate-400 dark:bg-slate-800">
-                            <ImageIcon size={18} />
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 font-medium">
-                        <span className="inline-flex items-center gap-2">
-                          <FolderTree size={14} className="text-slate-500" />
-                          {cat.name}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">{cat.slug}</td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium uppercase dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
-                          {cat.trade_type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-xs">{cat.product_count ?? "—"}</td>
-                      <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
-                        <button
-                          onClick={() => openEditModal(cat)}
-                          className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1.5 text-xs hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
-                        >
-                          <Edit2 size={14} /> Edit
-                        </button>
-                        <button
-                          onClick={() => handleDelete(cat)}
-                          className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-3 py-1.5 text-xs text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
-                        >
-                          <Trash2 size={14} /> Delete
-                        </button>
+                </thead>
+                <tbody>
+                  {loading ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center">
+                        <Loader2 className="mx-auto animate-spin" />
+                        <span className="ml-2">Loading...</span>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : categories.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center">
+                        No categories found
+                      </td>
+                    </tr>
+                  ) : (
+                    categories.map((cat) => (
+                      <tr
+                        key={cat.id}
+                        className="border-t border-slate-200 hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+                      >
+                        <td className="px-3 py-3 sm:px-4">
+                          {cat.image_url ? (
+                            <img
+                              src={cat.image_url}
+                              alt={cat.name}
+                              className="h-10 w-10 rounded object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <div className="flex h-10 w-10 items-center justify-center rounded bg-slate-100 text-slate-400 dark:bg-slate-800">
+                              <ImageIcon size={18} />
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-3 py-3 sm:px-4 font-medium">
+                          <span className="inline-flex items-center gap-2">
+                            <FolderTree size={14} className="text-slate-500" />
+                            {cat.name}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 sm:px-4 text-xs text-slate-500 dark:text-slate-400">{cat.slug}</td>
+                        <td className="px-3 py-3 sm:px-4">
+                          <span className="inline-flex rounded-full border border-slate-300 bg-slate-100 px-2 py-0.5 text-xs font-medium uppercase dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200">
+                            {cat.trade_type}
+                          </span>
+                        </td>
+                        <td className="px-3 py-3 sm:px-4 text-xs">{cat.product_count ?? "—"}</td>
+                        <td className="px-3 py-3 sm:px-4 text-right space-x-2 whitespace-nowrap">
+                          <button
+                            onClick={() => openEditModal(cat)}
+                            className="inline-flex items-center gap-1 rounded-full border border-slate-300 px-2 py-1 text-xs hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800"
+                          >
+                            <Edit2 size={14} /> Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(cat)}
+                            className="inline-flex items-center gap-1 rounded-full border border-rose-300 bg-rose-50 px-2 py-1 text-xs text-rose-700 hover:bg-rose-100 dark:border-rose-700 dark:bg-rose-900/40 dark:text-rose-200"
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
             <div>
               Page {page} of {pageCount} · {total} categories
             </div>
@@ -600,19 +601,19 @@ const CategoriesPage: React.FC = () => {
       {/* Create / Edit Modal */}
       {modalOpen &&
         createPortal(
-          <div className="fixed inset-0 z-[1000] flex items-start justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="fixed inset-0 z-[1000] flex items-start justify-center bg-black/40 backdrop-blur-sm p-3 sm:p-4">
             <div
               ref={modalContentRef}
-              className="w-full max-w-xl rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-auto max-h-[90vh] overflow-y-auto"
+              className="w-full max-w-xl rounded-2xl border border-slate-300 bg-white p-4 sm:p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950 my-8 mx-auto max-h-[90vh] overflow-y-auto"
             >
-              <div className="mb-6 flex items-center justify-between">
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <img src="/minal_gems_logo.svg" className="h-10 w-auto" alt="logo" />
+                  <img src="/minal_gems_logo.svg" className="h-8 sm:h-10 w-auto" alt="logo" />
                   <div>
-                    <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
+                    <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
                       {modalMode === "create" ? "Create Category" : "Edit Category"}
                     </h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                       Manage product categories.
                     </p>
                   </div>
@@ -679,14 +680,13 @@ const CategoriesPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Image upload */}
                 <div>
                   <label className="block text-sm font-medium mb-1">Category Image</label>
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
                     <button
                       type="button"
                       onClick={() => imageUploadRef.current?.click()}
-                      className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                      className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                     >
                       <ImagePlus size={18} />
                       Upload Image
@@ -717,7 +717,7 @@ const CategoriesPage: React.FC = () => {
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="h-24 w-24 rounded border object-cover"
+                        className="h-20 w-20 rounded border object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                           toast.error("Invalid image");
@@ -737,20 +737,20 @@ const CategoriesPage: React.FC = () => {
                   />
                 </div>
 
-                <div className="flex items-center justify-between pt-4">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4">
                   <p className="text-xs text-slate-500 dark:text-slate-400">* Required</p>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={() => setModalOpen(false)}
-                      className="rounded-full border border-slate-300 bg-white px-5 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                      className="rounded-full border border-slate-300 bg-white px-4 py-2 text-sm font-medium hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={saving}
-                      className="rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900"
+                      className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900"
                     >
                       {saving ? <Loader2 className="animate-spin" size={16} /> : "Save Category"}
                     </button>
