@@ -57,6 +57,7 @@ const METAL_TYPE_OPTIONS = [
   { value: "White_Gold", label: "White Gold" },
   { value: "Rose_Gold", label: "Rose Gold" },
   { value: "Silver", label: "Silver" },
+  { value: "Platinum", label: "Platinum" },
 ];
 
 const GOLD_CARAT_OPTIONS = [
@@ -251,6 +252,14 @@ const ProductsPage: React.FC = () => {
   const [showOtherTypeInput, setShowOtherTypeInput] = useState(false);
   const [otherTypeValue, setOtherTypeValue] = useState("");
 
+  // Custom / manual insert states for various dropdowns
+  const [customMetalType, setCustomMetalType] = useState("");
+  const [customGoldCarat, setCustomGoldCarat] = useState<number | null>(null);
+  const [customDiamondColor, setCustomDiamondColor] = useState("");
+  const [customDiamondClarity, setCustomDiamondClarity] = useState("");
+  const [customDiamondShape, setCustomDiamondShape] = useState("");
+  const [customOccasion, setCustomOccasion] = useState("");
+
   // assets
   const [assetModalOpen, setAssetModalOpen] = useState(false);
   const [assetProduct, setAssetProduct] = useState<Product | null>(null);
@@ -364,6 +373,12 @@ const ProductsPage: React.FC = () => {
     setCurrentProduct(null);
     setForm(blankProductForm);
     setDiamondEntries([]);
+    setCustomMetalType("");
+    setCustomGoldCarat(null);
+    setCustomDiamondColor("");
+    setCustomDiamondClarity("");
+    setCustomDiamondShape("");
+    setCustomOccasion("");
     setModalOpen(true);
     setShowMobileActions(false);
   };
@@ -422,6 +437,13 @@ const ProductsPage: React.FC = () => {
       gold_weight: Number(p.gold_weight ?? 0),
       metadataFields: metaFields,
     });
+    // reset custom values
+    setCustomMetalType("");
+    setCustomGoldCarat(null);
+    setCustomDiamondColor("");
+    setCustomDiamondClarity("");
+    setCustomDiamondShape("");
+    setCustomOccasion("");
     setModalOpen(true);
     setShowMobileActions(false);
   };
@@ -1276,7 +1298,7 @@ const ProductsPage: React.FC = () => {
                     <Gem size={18} /> Metal Details
                   </h3>
 
-                  {/* Metal Type */}
+                  {/* Metal Type - with custom option */}
                   <div className="mb-4">
                     <label className="mb-2 block text-sm font-medium">Metal Type</label>
                     <div className="flex flex-wrap gap-2">
@@ -1287,16 +1309,44 @@ const ProductsPage: React.FC = () => {
                             name="metal_type"
                             value={opt.value}
                             checked={form.metal_type === opt.value}
-                            onChange={(e) => setForm((f) => ({ ...f, metal_type: e.target.value }))}
+                            onChange={(e) => {
+                              setForm((f) => ({ ...f, metal_type: e.target.value }));
+                              setCustomMetalType("");
+                            }}
                             className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-500 dark:text-slate-100"
                           />
                           {opt.label}
                         </label>
                       ))}
+                      <label className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 px-3 py-2 text-xs sm:text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800">
+                        <input
+                          type="radio"
+                          name="metal_type"
+                          value="Other"
+                          checked={!METAL_TYPE_OPTIONS.some(opt => opt.value === form.metal_type) && form.metal_type !== ""}
+                          onChange={() => {
+                            setForm((f) => ({ ...f, metal_type: customMetalType || "Other" }));
+                          }}
+                          className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-500 dark:text-slate-100"
+                        />
+                        Other
+                      </label>
+                      {(!METAL_TYPE_OPTIONS.some(opt => opt.value === form.metal_type) && form.metal_type !== "") && (
+                        <input
+                          type="text"
+                          placeholder="Enter metal type"
+                          value={customMetalType}
+                          onChange={(e) => {
+                            setCustomMetalType(e.target.value);
+                            setForm((f) => ({ ...f, metal_type: e.target.value }));
+                          }}
+                          className="rounded-full border border-slate-300 px-3 py-2 text-sm w-40"
+                        />
+                      )}
                     </div>
                   </div>
 
-                  {/* Gold Carat */}
+                  {/* Gold Carat - with custom option */}
                   <div className="mb-4">
                     <label className="mb-2 block text-sm font-medium">Gold Carat</label>
                     <div className="flex flex-wrap gap-2">
@@ -1307,12 +1357,42 @@ const ProductsPage: React.FC = () => {
                             name="gold_carat"
                             value={opt.value}
                             checked={form.gold_carat === opt.value}
-                            onChange={(e) => setForm((f) => ({ ...f, gold_carat: Number(e.target.value) }))}
+                            onChange={(e) => {
+                              setForm((f) => ({ ...f, gold_carat: Number(e.target.value) }));
+                              setCustomGoldCarat(null);
+                            }}
                             className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-500 dark:text-slate-100"
                           />
                           {opt.label}
                         </label>
                       ))}
+                      <label className="flex cursor-pointer items-center gap-2 rounded-full border border-slate-300 px-3 py-2 text-xs sm:text-sm hover:bg-slate-100 dark:border-slate-600 dark:hover:bg-slate-800">
+                        <input
+                          type="radio"
+                          name="gold_carat"
+                          value="Other"
+                          checked={!GOLD_CARAT_OPTIONS.some(opt => opt.value === form.gold_carat) && form.gold_carat !== 0}
+                          onChange={() => {
+                            setForm((f) => ({ ...f, gold_carat: customGoldCarat ?? 0 }));
+                          }}
+                          className="h-4 w-4 border-slate-300 text-slate-900 focus:ring-slate-900 dark:border-slate-500 dark:text-slate-100"
+                        />
+                        Other
+                      </label>
+                      {(!GOLD_CARAT_OPTIONS.some(opt => opt.value === form.gold_carat) && form.gold_carat !== 0) && (
+                        <input
+                          type="number"
+                          placeholder="Carat value"
+                          step="0.1"
+                          value={customGoldCarat ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value ? Number(e.target.value) : 0;
+                            setCustomGoldCarat(val);
+                            setForm((f) => ({ ...f, gold_carat: val }));
+                          }}
+                          className="rounded-full border border-slate-300 px-3 py-2 text-sm w-24"
+                        />
+                      )}
                     </div>
                   </div>
 
@@ -1432,7 +1512,7 @@ const ProductsPage: React.FC = () => {
                       />
                     </div>
                   </div>
-                  {/* Occasion */}
+                  {/* Occasion - with custom input */}
                   <div className="mt-3">
                     <label className="mb-2 block text-sm font-medium">Occasion</label>
                     <div className="flex flex-wrap gap-2">
@@ -1455,7 +1535,39 @@ const ProductsPage: React.FC = () => {
                           {oc}
                         </label>
                       ))}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Other occasion"
+                          value={customOccasion}
+                          onChange={(e) => setCustomOccasion(e.target.value)}
+                          className="rounded-full border border-slate-300 px-3 py-1.5 text-sm"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (customOccasion.trim() && !form.metadataFields.occasion.includes(customOccasion.trim())) {
+                              setForm((f) => ({
+                                ...f,
+                                metadataFields: {
+                                  ...f.metadataFields,
+                                  occasion: [...f.metadataFields.occasion, customOccasion.trim()],
+                                },
+                              }));
+                              setCustomOccasion("");
+                            }
+                          }}
+                          className="rounded-full bg-slate-800 px-3 py-1.5 text-xs text-white"
+                        >
+                          Add
+                        </button>
+                      </div>
                     </div>
+                    {form.metadataFields.occasion.length > 0 && (
+                      <div className="mt-2 text-xs text-slate-500">
+                        Selected: {form.metadataFields.occasion.join(", ")}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -1490,7 +1602,7 @@ const ProductsPage: React.FC = () => {
           document.body
         )}
 
-      {/* Diamond Modal (add/edit) */}
+      {/* Diamond Modal (add/edit) - now with custom fields for Color, Clarity, Shape */}
       {diamondModalOpen &&
         createPortal(
           <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -1500,6 +1612,7 @@ const ProductsPage: React.FC = () => {
                 <button onClick={() => setDiamondModalOpen(false)}><X size={18} /></button>
               </div>
               <div className="space-y-3">
+                {/* Type */}
                 <div>
                   <label className="text-sm">Type</label>
                   <select
@@ -1508,6 +1621,7 @@ const ProductsPage: React.FC = () => {
                     className="w-full rounded-lg border p-2 text-base"
                   >
                     {DIAMOND_TYPE_OPTIONS.map(o => <option key={o}>{o}</option>)}
+                    <option value="Custom">Custom</option>
                   </select>
                   {showOtherTypeInput && (
                     <input
@@ -1529,31 +1643,74 @@ const ProductsPage: React.FC = () => {
                     <input type="number" min={0} step={0.001} value={currentDiamond.carat} onChange={(e) => setCurrentDiamond({...currentDiamond, carat: Number(e.target.value)})} className="w-full rounded-lg border p-2" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-sm">Color</label>
-                    <select value={currentDiamond.color} onChange={(e) => setCurrentDiamond({...currentDiamond, color: e.target.value})} className="w-full rounded-lg border p-2">
-                      {DIAMOND_COLOR_OPTIONS.map(o => <option key={o}>{o}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm">Clarity</label>
-                    <select value={currentDiamond.clarity} onChange={(e) => setCurrentDiamond({...currentDiamond, clarity: e.target.value})} className="w-full rounded-lg border p-2">
-                      {DIAMOND_CLARITY_OPTIONS.map(o => <option key={o}>{o}</option>)}
-                    </select>
-                  </div>
+                {/* Color with custom */}
+                <div>
+                  <label className="text-sm">Color</label>
+                  <select
+                    value={currentDiamond.color}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "__CUSTOM__") return;
+                      setCurrentDiamond({ ...currentDiamond, color: val });
+                    }}
+                    className="w-full rounded-lg border p-2"
+                  >
+                    {DIAMOND_COLOR_OPTIONS.map(o => <option key={o}>{o}</option>)}
+                    <option value="__CUSTOM__">Custom</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Enter custom color"
+                    value={!DIAMOND_COLOR_OPTIONS.includes(currentDiamond.color) && currentDiamond.color ? currentDiamond.color : ""}
+                    onChange={(e) => setCurrentDiamond({ ...currentDiamond, color: e.target.value })}
+                    className="w-full mt-2 rounded-lg border p-2"
+                  />
                 </div>
+                {/* Clarity with custom */}
+                <div>
+                  <label className="text-sm">Clarity</label>
+                  <select
+                    value={currentDiamond.clarity}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "__CUSTOM__") return;
+                      setCurrentDiamond({ ...currentDiamond, clarity: val });
+                    }}
+                    className="w-full rounded-lg border p-2"
+                  >
+                    {DIAMOND_CLARITY_OPTIONS.map(o => <option key={o}>{o}</option>)}
+                    <option value="__CUSTOM__">Custom</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Enter custom clarity"
+                    value={!DIAMOND_CLARITY_OPTIONS.includes(currentDiamond.clarity) && currentDiamond.clarity ? currentDiamond.clarity : ""}
+                    onChange={(e) => setCurrentDiamond({ ...currentDiamond, clarity: e.target.value })}
+                    className="w-full mt-2 rounded-lg border p-2"
+                  />
+                </div>
+                {/* Shape with custom */}
                 <div>
                   <label className="text-sm">Shape</label>
                   <select
                     value={currentDiamond.shape || "Round"}
-                    onChange={(e) => setCurrentDiamond({...currentDiamond, shape: e.target.value})}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "__CUSTOM__") return;
+                      setCurrentDiamond({ ...currentDiamond, shape: val });
+                    }}
                     className="w-full rounded-lg border p-2"
                   >
-                    {DIAMOND_SHAPE_OPTIONS.map(shape => (
-                      <option key={shape} value={shape}>{shape}</option>
-                    ))}
+                    {DIAMOND_SHAPE_OPTIONS.map(shape => <option key={shape}>{shape}</option>)}
+                    <option value="__CUSTOM__">Custom</option>
                   </select>
+                  <input
+                    type="text"
+                    placeholder="Enter custom shape"
+                    value={!DIAMOND_SHAPE_OPTIONS.includes(currentDiamond.shape || "") && currentDiamond.shape ? currentDiamond.shape : ""}
+                    onChange={(e) => setCurrentDiamond({ ...currentDiamond, shape: e.target.value })}
+                    className="w-full mt-2 rounded-lg border p-2"
+                  />
                 </div>
                 <div>
                   <label className="text-sm">Packet No. (optional)</label>

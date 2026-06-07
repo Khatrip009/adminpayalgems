@@ -39,7 +39,7 @@ export interface GoldConsumption {
   gold_weight: number;         // weight of returned ornament in original carat
   labour_amount: number;
   carat: number;               // e.g., 18, 22
-  conversion_percentage: number; // user‑set percentage (default 100)
+  conversion_percentage: number; // direct percentage to compute 24Kt fine gold (e.g., 76 means 76% of gold_weight is pure)
   final_gold_24kt: number;     // computed pure‑gold equivalent
   remark: string | null;
   reference_no: string | null;

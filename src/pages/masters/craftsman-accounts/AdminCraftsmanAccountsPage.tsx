@@ -198,12 +198,11 @@ export default function AdminCraftsmanAccountsPage() {
         }
       } else if (modalType === "goldConsumption") {
         const payload = { ...formData };
-        // If override toggle is off, compute final_gold_24kt
+        // If override toggle is off, compute final_gold_24kt using new formula (matches backend & image)
         if (!overrideFinal24kt) {
           const gw = safeNumber(payload.gold_weight);
-          const ct = safeNumber(payload.carat || 18);
           const cp = safeNumber(payload.conversion_percentage ?? 100);
-          payload.final_gold_24kt = gw * (ct / 24) * (cp / 100);
+          payload.final_gold_24kt = gw * (cp / 100);
         }
         if (editingItem) {
           await updateGoldConsumption(editingItem.id, payload);
@@ -649,7 +648,7 @@ export default function AdminCraftsmanAccountsPage() {
                 </>
               )}
 
-              {/* Gold Consumption Form */}
+              {/* Gold Consumption Form (UPDATED: new formula without carat) */}
               {modalType === "goldConsumption" && (
                 <>
                   <div>
@@ -679,7 +678,9 @@ export default function AdminCraftsmanAccountsPage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Conversion %</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Conversion % (direct % to 24Kt, e.g., 76)
+                    </label>
                     <Input
                       type="number"
                       step="0.01"
@@ -707,9 +708,8 @@ export default function AdminCraftsmanAccountsPage() {
                           ? formData.final_gold_24kt || ""
                           : (() => {
                               const gw = safeNumber(formData.gold_weight);
-                              const ct = safeNumber(formData.carat || 18);
                               const cp = safeNumber(formData.conversion_percentage ?? 100);
-                              return (gw * (ct / 24) * (cp / 100)).toFixed(3);
+                              return (gw * (cp / 100)).toFixed(3);
                             })()
                       }
                       onChange={(e) => {
@@ -786,4 +786,4 @@ export default function AdminCraftsmanAccountsPage() {
       )}
     </div>
   );
-} 
+}

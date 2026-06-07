@@ -21,7 +21,7 @@ import { getInvoiceById, type Invoice } from "@/api/inventory/payments.api";
 import { getOrderById, type Order, type OrderItem } from "@/api/sales/orders.api";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4500/api";
+  import.meta.env.VITE_API_BASE_URL || "https://apiminalgems.exotech.co.in/api";
 
 const money = (a: number, c = "INR") =>
   `${c} ${Number(a || 0).toLocaleString()}`;
