@@ -82,7 +82,7 @@ export default function LoginPage() {
               />
               <div className="leading-tight">
                 <p className="text-sm font-semibold uppercase tracking-[0.26em] text-pink-500">
-                  Minal Gems
+                  Payal Gems
                 </p>
                 <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
                   Jewellery for all occasions
