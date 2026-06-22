@@ -76,7 +76,7 @@ export default function LoginPage() {
             {/* Logo */}
             <div className="mb-6 flex items-center justify-center gap-3 md:justify-start">
               <img
-                src="/minal_gems_logo.svg"
+                src="/logo_minalgems.png"
                 alt="Minal Gems"
                 className="h-10 w-auto drop-shadow-sm"
               />
