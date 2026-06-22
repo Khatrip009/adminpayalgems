@@ -106,8 +106,8 @@ const CreateNotificationModal: React.FC<{
             className="h-10 w-auto object-contain"
             onError={(e) => {
               const t = e.target as HTMLImageElement;
-              if (!t.src.endsWith("/minal_gems_logo.svg")) {
-                t.src = "/minal_gems_logo.svg";
+              if (!t.src.endsWith("/logo_minalgems.png")) {
+                t.src = "/logo_minalgems.png";
               }
             }}
           />

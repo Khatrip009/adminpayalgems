@@ -1260,7 +1260,7 @@ useEffect(() => {
             >
               <div className="sticky top-0 z-10 bg-white dark:bg-slate-950 px-4 sm:px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src="/minal_gems_logo.svg" className="h-8 sm:h-10 w-auto" alt="logo" />
+                  <img src="/logo_minalgems.png" className="h-8 sm:h-10 w-auto" alt="logo" />
                   <div>
                     <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
                       {modalMode === "create" ? "Create Product" : "Edit Product"}
@@ -1874,7 +1874,7 @@ useEffect(() => {
             <div className="w-full max-w-3xl mx-4 my-8 rounded-2xl border border-slate-300 bg-white p-6 shadow-xl dark:border-slate-700 dark:bg-slate-950">
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src="/minal_gems_logo.svg" className="h-8 sm:h-10 w-auto" />
+                  <img src="/logo_minalgems.png" className="h-8 sm:h-10 w-auto" />
                   <div>
                     <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">Manage Media</h2>
                     <p className="text-sm text-slate-500 dark:text-slate-400">

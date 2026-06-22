@@ -158,8 +158,8 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
               aria-label="Go to dashboard"
             >
               <img
-                src="/minal_gems_logo.svg"
-                alt="Minal Gems"
+                src="/logo_minalgems.png"
+                alt="Payal Gems"
                 className="h-10 sm:h-12 w-auto"
               />
               <div className="hidden flex-col leading-tight sm:flex">
@@ -167,7 +167,7 @@ const AdminTopbar: React.FC<AdminTopbarProps> = ({ onToggleSidebar }) => {
                   Admin
                 </span>
                 <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-50">
-                  Minal Gems Dashboard
+                  Payal Gems Dashboard
                 </span>
               </div>
             </button>

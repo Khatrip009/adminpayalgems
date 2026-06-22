@@ -47,8 +47,8 @@ const AdminSidebar: React.FC<{
           {/* Logo */}
           <div className="flex h-20 w-56 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-50 via-blue-100 to-indigo-50 shadow-[0_16px_40px_rgba(125,211,252,0.4)]">
             <img
-              src="/minal_gems_logo.svg"
-              alt="Minal Gems"
+              src="/logo_minalgems.png"
+              alt="Payal Gems"
               className="h-auto w-40 drop-shadow-lg"
               loading="lazy"
             />

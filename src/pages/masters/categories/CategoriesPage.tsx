@@ -608,7 +608,7 @@ const CategoriesPage: React.FC = () => {
             >
               <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <img src="/minal_gems_logo.svg" className="h-8 sm:h-10 w-auto" alt="logo" />
+                  <img src="/logo_minalgems.png" className="h-8 sm:h-10 w-auto" alt="logo" />
                   <div>
                     <h2 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-white">
                       {modalMode === "create" ? "Create Category" : "Edit Category"}

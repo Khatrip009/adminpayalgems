@@ -609,7 +609,7 @@ const LeadsPage: React.FC = () => {
             {/* HEADER WITH LOGO */}
             <div className="flex items-center justify-between border-b border-slate-300 px-4 py-4 dark:border-slate-700">
               <div className="flex items-center gap-3">
-                <img src="/minal_gems_logo.svg" className="h-10 w-auto" />
+                <img src="/logo_minalgems.png" className="h-10 w-auto" />
 
                 <div>
                   <div className="text-lg font-semibold text-slate-900 dark:text-slate-50">
@@ -766,7 +766,7 @@ const LeadsPage: React.FC = () => {
             {/* HEADER with Logo */}
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <img src="/minal_gems_logo.svg" className="h-10 w-auto" />
+                <img src="/logo_minalgems.png" className="h-10 w-auto" />
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                     Create New Lead

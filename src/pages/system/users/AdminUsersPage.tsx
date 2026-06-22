@@ -505,7 +505,7 @@ const AdminUsersPage: React.FC = () => {
             {/* HEADER */}
             <div className="mb-6 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="/minal_gems_logo.svg" className="h-10 w-auto" />
+                <img src="/logo_minalgems.png" className="h-10 w-auto" />
                 <div>
                   <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
                     {modalMode === "create" ? "Create User" : "Edit User"}

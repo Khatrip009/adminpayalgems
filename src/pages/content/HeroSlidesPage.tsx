@@ -347,7 +347,7 @@ const HeroSlidesPage: React.FC = () => {
             >
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <img src="/minal_gems_logo.svg" className="h-10 w-auto" alt="logo" />
+                  <img src="/logo_minalgems.png" className="h-10 w-auto" alt="logo" />
                   <div>
                     <h2 className="text-xl font-semibold">{modalMode === "create" ? "Create Hero Slide" : "Edit Hero Slide"}</h2>
                     <p className="text-sm text-slate-500">Configure banner display on the homepage.</p>
